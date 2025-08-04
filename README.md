@@ -28,7 +28,7 @@ pip install smell-diffusion
 pip install smell-diffusion[viz]
 
 # Development version
-git clone https://github.com/yourusername/Smell-Diffusion-Generator.git
+git clone https://github.com/danieleschmidt/Smell-Diffusion-Generator.git
 cd Smell-Diffusion-Generator
 pip install -e ".[dev,chem]"
 ```
@@ -535,7 +535,7 @@ constrained_generation = model.generate(
 ```bibtex
 @article{smell_diffusion2025,
   title={Cross-Modal Diffusion Models for Molecular Fragrance Design},
-  author={Your Name et al.},
+  author={Daniel Schmidt},
   journal={Nature Chemistry},
   year={2025},
   doi={10.1038/s41557-025-XXXXX}
@@ -543,7 +543,7 @@ constrained_generation = model.generate(
 
 @inproceedings{safety_aware_generation2024,
   title={Safety-Aware Molecular Generation for the Fragrance Industry},
-  author={Your Team},
+  author={Daniel Schmidt},
   booktitle={NeurIPS Workshop on AI for Science},
   year={2024}
 }
