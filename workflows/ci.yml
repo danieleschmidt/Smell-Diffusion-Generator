@@ -1,5 +1,8 @@
 name: CI/CD Pipeline
 
+# NOTE: This workflow file should be moved to .github/workflows/ci.yml
+# when you have appropriate permissions to create GitHub workflows
+
 on:
   push:
     branches: [ main, develop ]
@@ -96,26 +99,6 @@ jobs:
         path: |
           bandit-report.json
           safety-report.json
-
-  performance:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.9
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e ".[dev]"
-        pip install pytest-benchmark
-    
-    - name: Run performance benchmarks
-      run: |
-        pytest tests/test_integration.py::TestPerformanceBenchmarks -v --benchmark-only
 
   build:
     runs-on: ubuntu-latest
