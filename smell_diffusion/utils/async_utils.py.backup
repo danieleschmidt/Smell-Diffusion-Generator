@@ -116,304 +116,22 @@ class AdvancedAsyncExecutor:
         if self.worker_pool:
             await asyncio.gather(*self.worker_pool, return_exceptions=True)
         
-        self.logger.logger.info("Advanced executor stopped")
-    
-    async def submit_task(self, 
-                         func: Callable, 
-                         *args, 
-                         priority: int = TaskPriority.NORMAL,
-                         timeout: Optional[float] = None,
-                         **kwargs) -> str:
-        """Submit a task for execution."""
-        task_id = str(uuid.uuid4())
-        task = AsyncTask(
-            task_id=task_id,
-            priority=priority,
-            func=func,
-            args=args,
-            kwargs=kwargs,
-            created_at=time.time(),
-            timeout=timeout
-        )
-        
-        await self.task_queue.put(task)
-        self.logger.logger.debug(f"Submitted task {task_id} with priority {priority}")
-        
-        return task_id
-    
-    async def get_result(self, task_id: str, timeout: Optional[float] = None) -> Any:
-        """Get task result by ID."""
-        start_time = time.time()
-        
-        while True:
-            # Check if completed
-            if task_id in self.completed_tasks:
-                return self.completed_tasks.pop(task_id)
-            
-            # Check if failed
-            if task_id in self.failed_tasks:
-                error = self.failed_tasks.pop(task_id)
-                raise error
-            
-            # Check timeout
-            if timeout and (time.time() - start_time) > timeout:
-                raise asyncio.TimeoutError(f"Task {task_id} timed out")
-            
-            # Wait a bit before checking again
-            await asyncio.sleep(0.1)
-    
-    async def execute_and_wait(self, 
-                              func: Callable, 
-                              *args, 
-                              priority: int = TaskPriority.NORMAL,
-                              timeout: Optional[float] = None,
-                              **kwargs) -> Any:
-        """Submit task and wait for result."""
-        task_id = await self.submit_task(func, *args, priority=priority, timeout=timeout, **kwargs)
-        return await self.get_result(task_id, timeout)
-    
-    async def _worker_manager(self):
-        """Manage worker pool dynamically."""
-        while True:
-            try:
-                await asyncio.sleep(10)  # Check every 10 seconds
-                
-                if self.enable_adaptive_scaling:
-                    await self._adaptive_scaling()
-                
-                # Clean up completed tasks periodically
-                await self._cleanup_old_tasks()
-                
-            except asyncio.CancelledError:
-                break
-            except Exception as e:
-                self.logger.log_error("worker_manager", e)
-    
-    async def _adaptive_scaling(self):
-        """Implement adaptive worker scaling based on load."""
-        current_time = time.time()
-        
-        # Avoid frequent scaling changes
-        if current_time - self.last_scaling_time < self.scaling_cooldown:
-            return
-        
-        queue_size = self.task_queue.qsize()
-        active_count = len(self.active_tasks)
-        
-        # Scale up if queue is growing and we have capacity
-        if queue_size > self.current_workers * 2 and self.current_workers < self.max_workers:
-            new_target = min(self.max_workers, self.current_workers + 2)
-            await self._scale_workers(new_target)
-            self.last_scaling_time = current_time
-            self.logger.logger.info(f"Scaled up to {new_target} workers (queue: {queue_size})")
-        
-        # Scale down if queue is empty and we have excess workers
-        elif queue_size == 0 and active_count < self.current_workers // 2 and self.current_workers > 2:
-            new_target = max(2, self.current_workers - 1)
-            await self._scale_workers(new_target)
-            self.last_scaling_time = current_time
-            self.logger.logger.info(f"Scaled down to {new_target} workers")
-    
-    async def _scale_workers(self, target_count: int):
-        """Scale worker pool to target count."""
-        if target_count > self.current_workers:
-            # Add workers
-            for _ in range(target_count - self.current_workers):
-                worker = asyncio.create_task(self._worker())
-                self.worker_pool.append(worker)
-        
-        elif target_count < self.current_workers:
-            # Remove workers (they will finish current tasks and exit)
-            excess = self.current_workers - target_count
-            for _ in range(excess):
-                if self.worker_pool:
-                    worker = self.worker_pool.pop()
-                    worker.cancel()
-        
-        self.current_workers = target_count
-        self.target_workers = target_count
-    
-    async def _worker(self):
-        """Worker coroutine that processes tasks from the queue."""
-        worker_id = str(uuid.uuid4())[:8]
-        self.logger.logger.debug(f"Worker {worker_id} started")
-        
-        try:
-            while True:
-                try:
-                    # Get next task with timeout
-                    task = await asyncio.wait_for(self.task_queue.get(), timeout=30.0)
-                    
-                    # Execute task
-                    await self._execute_task(task)
-                    
-                except asyncio.TimeoutError:
-                    # Worker idle timeout - exit gracefully
-                    break
-                except asyncio.CancelledError:
-                    break
-                except Exception as e:
-                    self.logger.log_error(f"worker_{worker_id}", e)
-        
-        finally:
-            self.logger.logger.debug(f"Worker {worker_id} stopped")
-    
-    async def _execute_task(self, task: AsyncTask):
-        """Execute an individual task."""
-        start_time = time.time()
-        func_name = getattr(task.func, '__name__', str(task.func))
-        
-        try:
-            # Add to active tasks
-            self.active_tasks[task.task_id] = task
-            
-            # Check circuit breaker
-            circuit_breaker = self._get_circuit_breaker(func_name)
-            if not circuit_breaker.can_execute():
-                raise RuntimeError(f"Circuit breaker open for {func_name}")
-            
-            # Execute with timeout
-            if asyncio.iscoroutinefunction(task.func):
-                result = await asyncio.wait_for(
-                    task.func(*task.args, **task.kwargs),
-                    timeout=task.timeout
-                )
-            else:
-                # Run in thread pool for sync functions
-                loop = asyncio.get_event_loop()
-                result = await asyncio.wait_for(
-                    loop.run_in_executor(
-                        None, 
-                        lambda: task.func(*task.args, **task.kwargs)
-                    ),
-                    timeout=task.timeout
-                )
-            
-            # Mark as successful
-            circuit_breaker.record_success()
-            self.completed_tasks[task.task_id] = result
-            
-            # Update metrics
-            execution_time = time.time() - start_time
-            self._update_metrics(func_name, execution_time, success=True)
-            
-            self.logger.logger.debug(f"Task {task.task_id} completed in {execution_time:.3f}s")
-            
-        except Exception as e:
-            # Mark as failed
-            circuit_breaker.record_failure()
-            self.failed_tasks[task.task_id] = e
-            
-            # Update metrics
-            execution_time = time.time() - start_time
-            self._update_metrics(func_name, execution_time, success=False)
-            
-            self.logger.log_error(f"task_{task.task_id}", e, {
-                "func_name": func_name,
-                "execution_time": execution_time
-            })
-        
-        finally:
-            # Remove from active tasks
-            self.active_tasks.pop(task.task_id, None)
-    
-    def _get_circuit_breaker(self, func_name: str) -> 'CircuitBreaker':
-        """Get or create circuit breaker for function."""
-        if func_name not in self.circuit_breakers:
-            self.circuit_breakers[func_name] = CircuitBreaker(
-                failure_threshold=5,
-                recovery_timeout=60,
-                expected_exception=Exception
-            )
-        return self.circuit_breakers[func_name]
-    
-    def _update_metrics(self, func_name: str, execution_time: float, success: bool):
-        """Update performance metrics."""
-        metrics = self.task_metrics[func_name]
-        metrics['count'] += 1
-        
-        if success:
-            metrics['total_time'] += execution_time
-            metrics['avg_time'] = metrics['total_time'] / (metrics['count'] - metrics['errors'])
-        else:
-            metrics['errors'] += 1
-    
-    async def _cleanup_old_tasks(self):
-        """Clean up old completed/failed tasks to prevent memory leaks."""
-        current_time = time.time()
-        cleanup_age = 3600  # 1 hour
-        
-        # Clean completed tasks
-        old_completed = [
-            task_id for task_id in self.completed_tasks.keys()
-            if current_time - self.completed_tasks.get(task_id, {}).get('timestamp', current_time) > cleanup_age
-        ]
-        for task_id in old_completed:
-            self.completed_tasks.pop(task_id, None)
-        
-        # Clean failed tasks
-        old_failed = [
-            task_id for task_id in self.failed_tasks.keys()
-            if current_time - getattr(self.failed_tasks.get(task_id), 'timestamp', current_time) > cleanup_age
-        ]
-        for task_id in old_failed:
-            self.failed_tasks.pop(task_id, None)
-    
-    async def _metrics_collector(self):
-        """Collect and log performance metrics."""
-        while True:
-            try:
-                await asyncio.sleep(300)  # Every 5 minutes
-                
-                # Log current status
-                queue_size = self.task_queue.qsize()
-                active_count = len(self.active_tasks)
-                
-                self.logger.logger.info(
-                    f"Executor status: {self.current_workers} workers, "
-                    f"{queue_size} queued, {active_count} active"
-                )
-                
-                # Log function metrics
-                for func_name, metrics in self.task_metrics.items():
-                    if metrics['count'] > 0:
-                        error_rate = metrics['errors'] / metrics['count']
-                        self.logger.logger.info(
-                            f"Function {func_name}: {metrics['count']} calls, "
-                            f"avg {metrics['avg_time']:.3f}s, {error_rate:.1%} errors"
-                        )
-                
-            except asyncio.CancelledError:
-                break
-            except Exception as e:
-                self.logger.log_error("metrics_collector", e)
-    
-    def get_status(self) -> Dict[str, Any]:
-        """Get current executor status."""
-        return {
-            "workers": {
-                "current": self.current_workers,
-                "target": self.target_workers,
-                "max": self.max_workers
-            },
-            "tasks": {
-                "queued": self.task_queue.qsize(),
-                "active": len(self.active_tasks),
-                "completed": len(self.completed_tasks),
-                "failed": len(self.failed_tasks)
-            },
-            "metrics": dict(self.task_metrics),
-            "circuit_breakers": {
-                name: cb.get_status() 
-                for name, cb in self.circuit_breakers.items()
-            }
-        }
+        self.logger.logger.info("Advanced executor stopped")\n    \n    async def submit_task(self, \n                         func: Callable, \n                         *args, \n                         priority: int = TaskPriority.NORMAL,\n                         timeout: Optional[float] = None,\n                         **kwargs) -> str:\n        """Submit a task for execution."""
+        task_id = str(uuid.uuid4())\n        task = AsyncTask(\n            task_id=task_id,\n            priority=priority,\n            func=func,\n            args=args,\n            kwargs=kwargs,\n            created_at=time.time(),\n            timeout=timeout\n        )\n        \n        await self.task_queue.put(task)\n        self.logger.logger.debug(f"Submitted task {task_id} with priority {priority}")\n        \n        return task_id\n    \n    async def get_result(self, task_id: str, timeout: Optional[float] = None) -> Any:\n        """Get task result by ID."""
+        start_time = time.time()\n        \n        while True:\n            # Check if completed\n            if task_id in self.completed_tasks:\n                return self.completed_tasks.pop(task_id)\n            \n            # Check if failed\n            if task_id in self.failed_tasks:\n                error = self.failed_tasks.pop(task_id)\n                raise error\n            \n            # Check timeout\n            if timeout and (time.time() - start_time) > timeout:\n                raise asyncio.TimeoutError(f"Task {task_id} timed out")\n            \n            # Wait a bit before checking again\n            await asyncio.sleep(0.1)\n    \n    async def execute_and_wait(self, \n                              func: Callable, \n                              *args, \n                              priority: int = TaskPriority.NORMAL,\n                              timeout: Optional[float] = None,\n                              **kwargs) -> Any:\n        """Submit task and wait for result."""
+        task_id = await self.submit_task(func, *args, priority=priority, timeout=timeout, **kwargs)\n        return await self.get_result(task_id, timeout)\n    \n    async def _worker_manager(self):\n        """Manage worker pool dynamically."""
+        while True:\n            try:\n                await asyncio.sleep(10)  # Check every 10 seconds\n                \n                if self.enable_adaptive_scaling:\n                    await self._adaptive_scaling()\n                \n                # Clean up completed tasks periodically\n                await self._cleanup_old_tasks()\n                \n            except asyncio.CancelledError:\n                break\n            except Exception as e:\n                self.logger.log_error("worker_manager", e)\n    \n    async def _adaptive_scaling(self):\n        """Implement adaptive worker scaling based on load."""
+        current_time = time.time()\n        \n        # Avoid frequent scaling changes\n        if current_time - self.last_scaling_time < self.scaling_cooldown:\n            return\n        \n        queue_size = self.task_queue.qsize()\n        active_count = len(self.active_tasks)\n        \n        # Scale up if queue is growing and we have capacity\n        if queue_size > self.current_workers * 2 and self.current_workers < self.max_workers:\n            new_target = min(self.max_workers, self.current_workers + 2)\n            await self._scale_workers(new_target)\n            self.last_scaling_time = current_time\n            self.logger.logger.info(f"Scaled up to {new_target} workers (queue: {queue_size})")\n        \n        # Scale down if queue is empty and we have excess workers\n        elif queue_size == 0 and active_count < self.current_workers // 2 and self.current_workers > 2:\n            new_target = max(2, self.current_workers - 1)\n            await self._scale_workers(new_target)\n            self.last_scaling_time = current_time\n            self.logger.logger.info(f"Scaled down to {new_target} workers")\n    \n    async def _scale_workers(self, target_count: int):\n        """Scale worker pool to target count."""
+        if target_count > self.current_workers:\n            # Add workers\n            for _ in range(target_count - self.current_workers):\n                worker = asyncio.create_task(self._worker())\n                self.worker_pool.append(worker)\n        \n        elif target_count < self.current_workers:\n            # Remove workers (they will finish current tasks and exit)\n            excess = self.current_workers - target_count\n            for _ in range(excess):\n                if self.worker_pool:\n                    worker = self.worker_pool.pop()\n                    worker.cancel()\n        \n        self.current_workers = target_count\n        self.target_workers = target_count\n    \n    async def _worker(self):\n        """Worker coroutine that processes tasks from the queue."""
+        worker_id = str(uuid.uuid4())[:8]\n        self.logger.logger.debug(f"Worker {worker_id} started")\n        \n        try:\n            while True:\n                try:\n                    # Get next task with timeout\n                    task = await asyncio.wait_for(self.task_queue.get(), timeout=30.0)\n                    \n                    # Execute task\n                    await self._execute_task(task)\n                    \n                except asyncio.TimeoutError:\n                    # Worker idle timeout - exit gracefully\n                    break\n                except asyncio.CancelledError:\n                    break\n                except Exception as e:\n                    self.logger.log_error(f"worker_{worker_id}", e)\n        \n        finally:\n            self.logger.logger.debug(f"Worker {worker_id} stopped")\n    \n    async def _execute_task(self, task: AsyncTask):\n        """Execute an individual task."""
+        start_time = time.time()\n        func_name = getattr(task.func, '__name__', str(task.func))\n        \n        try:\n            # Add to active tasks\n            self.active_tasks[task.task_id] = task\n            \n            # Check circuit breaker\n            circuit_breaker = self._get_circuit_breaker(func_name)\n            if not circuit_breaker.can_execute():\n                raise RuntimeError(f"Circuit breaker open for {func_name}")\n            \n            # Execute with timeout\n            if asyncio.iscoroutinefunction(task.func):\n                result = await asyncio.wait_for(\n                    task.func(*task.args, **task.kwargs),\n                    timeout=task.timeout\n                )\n            else:\n                # Run in thread pool for sync functions\n                loop = asyncio.get_event_loop()\n                result = await asyncio.wait_for(\n                    loop.run_in_executor(\n                        None, \n                        lambda: task.func(*task.args, **task.kwargs)\n                    ),\n                    timeout=task.timeout\n                )\n            \n            # Mark as successful\n            circuit_breaker.record_success()\n            self.completed_tasks[task.task_id] = result\n            \n            # Update metrics\n            execution_time = time.time() - start_time\n            self._update_metrics(func_name, execution_time, success=True)\n            \n            self.logger.logger.debug(f"Task {task.task_id} completed in {execution_time:.3f}s")\n            \n        except Exception as e:\n            # Mark as failed\n            circuit_breaker.record_failure()\n            self.failed_tasks[task.task_id] = e\n            \n            # Update metrics\n            execution_time = time.time() - start_time\n            self._update_metrics(func_name, execution_time, success=False)\n            \n            self.logger.log_error(f"task_{task.task_id}", e, {\n                "func_name": func_name,\n                "execution_time": execution_time\n            })\n        \n        finally:\n            # Remove from active tasks\n            self.active_tasks.pop(task.task_id, None)\n    \n    def _get_circuit_breaker(self, func_name: str) -> 'CircuitBreaker':\n        """Get or create circuit breaker for function."""
+        if func_name not in self.circuit_breakers:\n            self.circuit_breakers[func_name] = CircuitBreaker(\n                failure_threshold=5,\n                recovery_timeout=60,\n                expected_exception=Exception\n            )\n        return self.circuit_breakers[func_name]
 
 
 class CircuitBreaker:
     """Circuit breaker for fault tolerance."""
     
-    def __init__(self, failure_threshold: int = 5, recovery_timeout: float = 60.0, expected_exception: type = Exception):
+    def __init__(self, failure_threshold: int = 5, recovery_timeout: int = 60, expected_exception: type = Exception):
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
         self.expected_exception = expected_exception
@@ -421,72 +139,52 @@ class CircuitBreaker:
         self.failure_count = 0
         self.last_failure_time = None
         self.state = 'CLOSED'  # CLOSED, OPEN, HALF_OPEN
-        self.lock = threading.Lock()
         
         self.logger = SmellDiffusionLogger("circuit_breaker")
     
-    async def call(self, func: Callable, *args, **kwargs) -> Any:
-        """Execute function through circuit breaker."""
-        if not self.can_execute():
-            raise Exception("Circuit breaker is OPEN")
-        
-        try:
-            if asyncio.iscoroutinefunction(func):
-                result = await func(*args, **kwargs)
-            else:
-                loop = asyncio.get_event_loop()
-                result = await loop.run_in_executor(None, func, *args, **kwargs)
-            
-            self.record_success()
-            return result
-            
-        except Exception as e:
-            self.record_failure()
-            raise
-    
     def can_execute(self) -> bool:
         """Check if execution is allowed."""
-        with self.lock:
-            if self.state == 'CLOSED':
-                return True
-            
-            if self.state == 'OPEN':
-                if self.last_failure_time and time.time() - self.last_failure_time > self.recovery_timeout:
-                    self.state = 'HALF_OPEN'
-                    self.logger.logger.info("Circuit breaker entering HALF_OPEN state")
-                    return True
-                return False
-            
-            # HALF_OPEN state
+        if self.state == 'CLOSED':
             return True
+        
+        if self.state == 'OPEN':
+            if self.last_failure_time and time.time() - self.last_failure_time > self.recovery_timeout:
+                self.state = 'HALF_OPEN'
+                self.logger.logger.info("Circuit breaker entering HALF_OPEN state")
+                return True
+            return False
+        
+        # HALF_OPEN state
+        return True
     
     def record_success(self):
         """Record successful execution."""
-        with self.lock:
-            if self.state == 'HALF_OPEN':
-                self.state = 'CLOSED'
+        if self.state == 'HALF_OPEN':
+            self.state = 'CLOSED'
             self.failure_count = 0
             self.logger.logger.info("Circuit breaker reset to CLOSED state")
     
     def record_failure(self):
         """Record failed execution."""
-        with self.lock:
-            self.failure_count += 1
-            self.last_failure_time = time.time()
-            
-            if self.failure_count >= self.failure_threshold:
-                self.state = 'OPEN'
-                self.logger.logger.warning(f"Circuit breaker opened after {self.failure_count} failures")
+        self.failure_count += 1
+        self.last_failure_time = time.time()
+        
+        if self.failure_count >= self.failure_threshold:
+            self.state = 'OPEN'
+            self.logger.logger.warning(f"Circuit breaker opened after {self.failure_count} failures")
     
     def get_status(self) -> Dict[str, Any]:
         """Get circuit breaker status."""
-        with self.lock:
-            return {
-                'state': self.state,
-                'failure_count': self.failure_count,
-                'failure_threshold': self.failure_threshold,
-                'last_failure_time': self.last_failure_time
-            }
+        return {
+            'state': self.state,
+            'failure_count': self.failure_count,
+            'failure_threshold': self.failure_threshold,
+            'last_failure_time': self.last_failure_time
+        }\n    \n    def _update_metrics(self, func_name: str, execution_time: float, success: bool):\n        """Update performance metrics."""
+        metrics = self.task_metrics[func_name]\n        metrics['count'] += 1\n        \n        if success:\n            metrics['total_time'] += execution_time\n            metrics['avg_time'] = metrics['total_time'] / (metrics['count'] - metrics['errors'])\n        else:\n            metrics['errors'] += 1\n    \n    async def _cleanup_old_tasks(self):\n        """Clean up old completed/failed tasks to prevent memory leaks."""
+        current_time = time.time()\n        cleanup_age = 3600  # 1 hour\n        \n        # Clean completed tasks\n        old_completed = [\n            task_id for task_id in self.completed_tasks.keys()\n            if current_time - self.completed_tasks.get(task_id, {}).get('timestamp', current_time) > cleanup_age\n        ]\n        for task_id in old_completed:\n            self.completed_tasks.pop(task_id, None)\n        \n        # Clean failed tasks\n        old_failed = [\n            task_id for task_id in self.failed_tasks.keys()\n            if current_time - getattr(self.failed_tasks.get(task_id), 'timestamp', current_time) > cleanup_age\n        ]\n        for task_id in old_failed:\n            self.failed_tasks.pop(task_id, None)\n    \n    async def _metrics_collector(self):\n        """Collect and log performance metrics."""
+        while True:\n            try:\n                await asyncio.sleep(300)  # Every 5 minutes\n                \n                # Log current status\n                queue_size = self.task_queue.qsize()\n                active_count = len(self.active_tasks)\n                \n                self.logger.logger.info(\n                    f"Executor status: {self.current_workers} workers, "\n                    f"{queue_size} queued, {active_count} active"\n                )\n                \n                # Log function metrics\n                for func_name, metrics in self.task_metrics.items():\n                    if metrics['count'] > 0:\n                        error_rate = metrics['errors'] / metrics['count']\n                        self.logger.logger.info(\n                            f"Function {func_name}: {metrics['count']} calls, "\n                            f"avg {metrics['avg_time']:.3f}s, {error_rate:.1%} errors"\n                        )\n                \n            except asyncio.CancelledError:\n                break\n            except Exception as e:\n                self.logger.log_error("metrics_collector", e)\n    \n    def get_status(self) -> Dict[str, Any]:\n        """Get current executor status."""
+        return {\n            "workers": {\n                "current": self.current_workers,\n                "target": self.target_workers,\n                "max": self.max_workers\n            },\n            "tasks": {\n                "queued": self.task_queue.qsize(),\n                "active": len(self.active_tasks),\n                "completed": len(self.completed_tasks),\n                "failed": len(self.failed_tasks)\n            },\n            "metrics": dict(self.task_metrics),\n            "circuit_breakers": {\n                name: cb.get_status() \n                for name, cb in self.circuit_breakers.items()\n            }\n        }
 
 
 class AsyncMoleculeGenerator:
@@ -511,15 +209,9 @@ class AsyncMoleculeGenerator:
         # Performance optimization
         self.batch_processor = None
         
-    async def start(self):
-        """Start the async generator."""
-        await self.executor.start()
-        self.logger.logger.info("Async molecule generator started")
-    
-    async def stop(self):
-        """Stop the async generator."""
-        await self.executor.stop()
-        self.logger.logger.info("Async molecule generator stopped")
+    async def start(self):\n        """Start the async generator."""
+        await self.executor.start()\n        self.logger.logger.info("Async molecule generator started")\n    \n    async def stop(self):\n        """Stop the async generator."""
+        await self.executor.stop()\n        self.logger.logger.info("Async molecule generator stopped")
     
     async def generate_async(self, prompt: str, num_molecules: int = 1, **kwargs) -> List[Any]:
         """Generate molecules asynchronously."""
@@ -527,7 +219,7 @@ class AsyncMoleculeGenerator:
         
         try:
             result = await loop.run_in_executor(
-                None,
+                self.executor,
                 self._generate_sync,
                 prompt,
                 num_molecules,
@@ -571,8 +263,7 @@ class AsyncMoleculeGenerator:
     def __del__(self):
         """Cleanup executor on deletion."""
         if hasattr(self, 'executor'):
-            # Note: Can't call async methods in __del__
-            pass
+            self.executor.shutdown(wait=True)
 
 
 class ConcurrentSafetyEvaluator:
@@ -867,3 +558,79 @@ class AsyncBatchProcessor:
             return batch_results
 
 
+class CircuitBreaker:
+    """Circuit breaker pattern for resilient async operations."""
+    
+    def __init__(self, failure_threshold: int = 5, recovery_timeout: float = 60.0):
+        """Initialize circuit breaker."""
+        self.failure_threshold = failure_threshold
+        self.recovery_timeout = recovery_timeout
+        self.failure_count = 0
+        self.last_failure_time = None
+        self.state = "CLOSED"  # CLOSED, OPEN, HALF_OPEN
+        self.lock = threading.Lock()
+        self.logger = SmellDiffusionLogger("circuit_breaker")
+    
+    async def call(self, func: Callable, *args, **kwargs) -> Any:
+        """Execute function through circuit breaker."""
+        if not self._can_execute():
+            raise Exception("Circuit breaker is OPEN")
+        
+        try:
+            if asyncio.iscoroutinefunction(func):
+                result = await func(*args, **kwargs)
+            else:
+                loop = asyncio.get_event_loop()
+                result = await loop.run_in_executor(None, func, *args, **kwargs)
+            
+            self._on_success()
+            return result
+            
+        except Exception as e:
+            self._on_failure()
+            raise
+    
+    def _can_execute(self) -> bool:
+        """Check if execution is allowed."""
+        with self.lock:
+            if self.state == "CLOSED":
+                return True
+            
+            if self.state == "OPEN":
+                if self.last_failure_time and time.time() - self.last_failure_time > self.recovery_timeout:
+                    self.state = "HALF_OPEN"
+                    return True
+                return False
+            
+            if self.state == "HALF_OPEN":
+                return True
+            
+            return False
+    
+    def _on_success(self) -> None:
+        """Handle successful execution."""
+        with self.lock:
+            self.failure_count = 0
+            self.state = "CLOSED"
+    
+    def _on_failure(self) -> None:
+        """Handle failed execution."""
+        with self.lock:
+            self.failure_count += 1
+            self.last_failure_time = time.time()
+            
+            if self.failure_count >= self.failure_threshold:
+                self.state = "OPEN"
+                self.logger.logger.warning(
+                    f"Circuit breaker opened after {self.failure_count} failures"
+                )
+    
+    def get_state(self) -> Dict[str, Any]:
+        """Get circuit breaker state."""
+        with self.lock:
+            return {
+                "state": self.state,
+                "failure_count": self.failure_count,
+                "failure_threshold": self.failure_threshold,
+                "last_failure_time": self.last_failure_time
+            }

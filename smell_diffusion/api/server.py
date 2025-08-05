@@ -1,14 +1,28 @@
-"""FastAPI server for Smell Diffusion Generator."""
+"""FastAPI server for Smell Diffusion Generator with comprehensive security."""
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
+import os
+import time
+import hashlib
+import secrets
+from datetime import datetime, timedelta
+from typing import List, Optional, Dict, Any, Set
 import uuid
 import asyncio
-from datetime import datetime
 import traceback
+import ipaddress
+from collections import defaultdict, deque
+
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends, Request, Response, Security
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, APIKeyHeader
+from pydantic import BaseModel, Field, validator
+import jwt
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from ..core.smell_diffusion import SmellDiffusion
 from ..safety.evaluator import SafetyEvaluator
@@ -23,9 +37,257 @@ from ..utils.async_utils import (
     CircuitBreaker
 )
 from ..utils.caching import get_cache
+from ..utils.config import get_config
 
 
-# Pydantic models for API
+# Security Configuration
+class SecurityConfig:
+    """Security configuration for the API server."""
+    
+    def __init__(self):
+        self.config = get_config()
+        
+        # JWT Configuration
+        self.JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', secrets.token_urlsafe(32))
+        self.JWT_ALGORITHM = 'HS256'
+        self.JWT_EXPIRATION_HOURS = 24
+        
+        # Rate limiting configuration
+        self.DEFAULT_RATE_LIMIT = '100/hour'
+        self.AUTHENTICATED_RATE_LIMIT = '500/hour'
+        self.PREMIUM_RATE_LIMIT = '2000/hour'
+        
+        # Security headers
+        self.ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
+        self.CORS_ORIGINS = os.getenv('CORS_ORIGINS', '*').split(',')
+        
+        # Request size limits
+        self.MAX_REQUEST_SIZE = 10 * 1024 * 1024  # 10MB
+        self.MAX_PROMPT_LENGTH = 1000
+        self.MAX_MOLECULES_PER_REQUEST = 100
+
+# Rate Limiting
+limiter = Limiter(key_func=get_remote_address)
+
+# Security Components
+security_config = SecurityConfig()
+bearer_scheme = HTTPBearer(auto_error=False)
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+# In-memory stores (in production, use Redis or database)
+blacklisted_tokens: Set[str] = set()
+failed_login_attempts = defaultdict(lambda: deque(maxlen=10))
+suspicious_ips: Set[str] = set()
+
+class SecurityMiddleware:
+    """Custom security middleware for advanced threat protection."""
+    
+    def __init__(self, app):
+        self.app = app
+        self.request_tracker = defaultdict(lambda: deque(maxlen=100))
+        self.blocked_ips: Set[str] = set()
+        
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        
+        request = Request(scope, receive)
+        client_ip = get_remote_address(request)
+        
+        # Check if IP is blocked
+        if self._is_ip_blocked(client_ip):
+            response = JSONResponse(
+                status_code=403,
+                content={"detail": "Access denied: suspicious activity detected"}
+            )
+            await response(scope, receive, send)
+            return
+        
+        # Track request patterns
+        self._track_request(client_ip, request)
+        
+        # Check for suspicious patterns
+        if self._detect_suspicious_activity(client_ip):
+            self._block_ip(client_ip)
+            response = JSONResponse(
+                status_code=429,
+                content={"detail": "Rate limit exceeded: suspicious activity detected"}
+            )
+            await response(scope, receive, send)
+            return
+        
+        await self.app(scope, receive, send)
+    
+    def _is_ip_blocked(self, ip: str) -> bool:
+        """Check if IP is in blocked list."""
+        return ip in self.blocked_ips or ip in suspicious_ips
+    
+    def _track_request(self, ip: str, request: Request):
+        """Track request for pattern analysis."""
+        timestamp = time.time()
+        self.request_tracker[ip].append({
+            'timestamp': timestamp,
+            'path': request.url.path,
+            'method': request.method,
+            'user_agent': request.headers.get('user-agent', '')
+        })
+    
+    def _detect_suspicious_activity(self, ip: str) -> bool:
+        """Detect suspicious activity patterns."""
+        requests = self.request_tracker[ip]
+        if len(requests) < 10:
+            return False
+        
+        recent_requests = [r for r in requests if time.time() - r['timestamp'] < 60]
+        
+        # Too many requests in short time
+        if len(recent_requests) > 50:
+            return True
+        
+        # Scanning behavior (many different endpoints)
+        unique_paths = set(r['path'] for r in recent_requests)
+        if len(unique_paths) > 20:
+            return True
+        
+        # Repeated errors (would need error tracking)
+        return False
+    
+    def _block_ip(self, ip: str):
+        """Block an IP address."""
+        self.blocked_ips.add(ip)
+        suspicious_ips.add(ip)
+
+# Authentication and Authorization
+async def get_current_user(
+    request: Request,
+    token: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
+    api_key: Optional[str] = Depends(api_key_header)
+) -> Optional[Dict[str, Any]]:
+    """Get current authenticated user with comprehensive validation."""
+    
+    # Try API key authentication first
+    if api_key:
+        user = await validate_api_key(api_key, request)
+        if user:
+            return user
+    
+    # Try JWT token authentication
+    if token:
+        user = await validate_jwt_token(token.credentials, request)
+        if user:
+            return user
+    
+    # Allow anonymous access for some endpoints
+    return None
+
+async def validate_api_key(api_key: str, request: Request) -> Optional[Dict[str, Any]]:
+    """Validate API key with rate limiting and logging."""
+    try:
+        # In production, check against database
+        valid_api_keys = {
+            os.getenv('DEMO_API_KEY', 'demo-key-12345'): {
+                'user_id': 'demo-user',
+                'tier': 'free',
+                'rate_limit': '100/hour'
+            }
+        }
+        
+        if api_key in valid_api_keys:
+            user_info = valid_api_keys[api_key]
+            # Log successful authentication
+            logger = SmellDiffusionLogger('auth')
+            logger.logger.info(f"API key authentication successful for user: {user_info['user_id']}")
+            return user_info
+        
+        # Log failed authentication
+        client_ip = get_remote_address(request)
+        failed_login_attempts[client_ip].append(time.time())
+        
+        return None
+        
+    except Exception as e:
+        logger = SmellDiffusionLogger('auth')
+        logger.log_error('api_key_validation', e)
+        return None
+
+async def validate_jwt_token(token: str, request: Request) -> Optional[Dict[str, Any]]:
+    """Validate JWT token with comprehensive security checks."""
+    try:
+        # Check blacklist
+        if token in blacklisted_tokens:
+            return None
+        
+        # Decode and validate token
+        payload = jwt.decode(
+            token, 
+            security_config.JWT_SECRET_KEY, 
+            algorithms=[security_config.JWT_ALGORITHM]
+        )
+        
+        # Check expiration
+        if payload.get('exp', 0) < time.time():
+            return None
+        
+        # Log successful authentication
+        logger = SmellDiffusionLogger('auth')
+        logger.logger.info(f"JWT authentication successful for user: {payload.get('user_id')}")
+        
+        return {
+            'user_id': payload.get('user_id'),
+            'tier': payload.get('tier', 'free'),
+            'rate_limit': payload.get('rate_limit', '100/hour')
+        }
+        
+    except jwt.InvalidTokenError:
+        # Log failed authentication
+        client_ip = get_remote_address(request)
+        failed_login_attempts[client_ip].append(time.time())
+        return None
+    except Exception as e:
+        logger = SmellDiffusionLogger('auth')
+        logger.log_error('jwt_validation', e)
+        return None
+
+def require_auth(user: Optional[Dict[str, Any]] = Depends(get_current_user)):
+    """Dependency that requires authentication."""
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="Authentication required"
+        )
+    return user
+
+def get_rate_limit_for_user(user: Optional[Dict[str, Any]]) -> str:
+    """Get rate limit based on user tier."""
+    if not user:
+        return security_config.DEFAULT_RATE_LIMIT
+    
+    tier = user.get('tier', 'free')
+    if tier == 'premium':
+        return security_config.PREMIUM_RATE_LIMIT
+    elif tier == 'authenticated':
+        return security_config.AUTHENTICATED_RATE_LIMIT
+    else:
+        return security_config.DEFAULT_RATE_LIMIT
+
+# Input Validation and Sanitization
+def sanitize_prompt(prompt: str) -> str:
+    """Sanitize input prompt for security."""
+    # Remove potential injection attempts
+    dangerous_patterns = ['<script', 'javascript:', 'eval(', 'exec(']
+    sanitized = prompt
+    
+    for pattern in dangerous_patterns:
+        sanitized = sanitized.replace(pattern, '')
+    
+    # Limit length
+    if len(sanitized) > security_config.MAX_PROMPT_LENGTH:
+        sanitized = sanitized[:security_config.MAX_PROMPT_LENGTH]
+    
+    return sanitized.strip()
+
+# Pydantic models for API with enhanced validation
 class GenerationRequest(BaseModel):
     prompt: str = Field(..., description="Text description of desired fragrance")
     num_molecules: int = Field(5, ge=1, le=100, description="Number of molecules to generate")
