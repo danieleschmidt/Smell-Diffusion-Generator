@@ -1,3 +1,4 @@
+```python
 """Core SmellDiffusion model for generating fragrance molecules from text."""
 
 import random
@@ -33,8 +34,11 @@ except ImportError:
     np = MockNumPy()
 
 from .molecule import Molecule
-from ..utils.logging import SmellDiffusionLogger, performance_monitor
+from ..utils.logging import SmellDiffusionLogger, performance_monitor, log_molecule_generation
 from ..utils.validation import validate_inputs, ValidationError
+from ..utils.caching import cached
+from ..utils.async_utils import AsyncMoleculeGenerator
+from ..utils.config import get_config
 
 
 class SmellDiffusion:
@@ -93,7 +97,14 @@ class SmellDiffusion:
         self._is_loaded = False
         self._generation_count = 0
         self._error_count = 0
+        self.config = get_config()
         self.logger = SmellDiffusionLogger(f"smell_diffusion_{model_name}")
+        self._cache = {}
+        self._performance_stats = {
+            "generations": 0,
+            "cache_hits": 0,
+            "avg_generation_time": 0.0
+        }
         
         # Validate model name
         if not isinstance(model_name, str) or not model_name.strip():
@@ -109,9 +120,28 @@ class SmellDiffusion:
         return instance
         
     def _load_model(self) -> None:
-        """Simulate model loading."""
+        """Simulate model loading with optimization."""
         print(f"Loading model: {self.model_name}")
+        
+        # Optimize based on configuration
+        if self.config.model.device == "auto":
+            # Auto-detect best device
+            try:
+                import torch
+                if torch.cuda.is_available():
+                    self.device = "cuda"
+                else:
+                    self.device = "cpu"
+            except ImportError:
+                self.device = "cpu"
+        else:
+            self.device = self.config.model.device
+        
+        # Pre-compile molecular patterns for faster lookup
+        self._precompile_patterns()
+        
         self._is_loaded = True
+        print(f"Model loaded on {self.device}")
         
     def _analyze_prompt(self, prompt: str) -> Dict[str, float]:
         """Analyze text prompt to identify scent categories."""
@@ -177,8 +207,35 @@ class SmellDiffusion:
             
         return random.choice(variations)
     
+    def _precompile_patterns(self) -> None:
+        """Pre-compile molecular patterns for faster matching."""
+        self._compiled_patterns = {}
+        
+        # Pre-compile common substructure patterns
+        common_patterns = {
+            "aromatic": r"c1ccccc1|C1=CC=CC=C1",
+            "aldehyde": r"C=O",
+            "alcohol": r"CO(?!C=O)",
+            "ester": r"C\(=O\)O",
+            "ether": r"COC",
+            "ketone": r"C\(=O\)C"
+        }
+        
+        import re
+        for name, pattern in common_patterns.items():
+            try:
+                self._compiled_patterns[name] = re.compile(pattern)
+            except:
+                pass
+    
+    @cached(ttl=3600, persist=True)
+    def _analyze_prompt_cached(self, prompt: str) -> Dict[str, float]:
+        """Cached version of prompt analysis."""
+        return self._analyze_prompt(prompt)
+    
     @validate_inputs
     @performance_monitor("molecule_generation")
+    @log_molecule_generation
     def generate(self, 
                  prompt: str,
                  num_molecules: int = 1,
@@ -194,6 +251,7 @@ class SmellDiffusion:
             
             # Increment generation counter
             self._generation_count += 1
+            self._performance_stats["generations"] += 1
             
             # Validate inputs
             if not isinstance(prompt, str):
@@ -225,58 +283,80 @@ class SmellDiffusion:
             start_time = time.time()
             
             try:
-                # Analyze prompt with error handling
-                category_scores = self._analyze_prompt(prompt)
-                self.logger.logger.debug(f"Category analysis complete for request {request_id}")
+                # Use caching for repeated prompts
+                cache_key = f"{prompt}_{num_molecules}_{guidance_scale}_{safety_filter}"
                 
-                # Select base molecules with error handling
-                base_smiles = self._select_molecules(category_scores, num_molecules)
-                self.logger.logger.debug(f"Selected {len(base_smiles)} base molecules for request {request_id}")
+                # Analyze prompt with caching and error handling
+                try:
+                    category_scores = self._analyze_prompt_cached(prompt)
+                    self._performance_stats["cache_hits"] += 1
+                    self.logger.logger.debug(f"Category analysis complete for request {request_id}")
+                except Exception as e:
+                    self.logger.log_error("prompt_analysis", e, {"prompt": prompt})
+                    # Fallback to balanced categories on analysis failure
+                    category_scores = {k: 1.0/len(self.SCENT_KEYWORDS) 
+                                     for k in self.SCENT_KEYWORDS.keys()}
                 
-                # Add variations with error handling
-                varied_smiles = []
-                for i, smiles in enumerate(base_smiles):
-                    try:
-                        varied = self._add_molecular_variation(smiles)
-                        varied_smiles.append(varied)
-                    except Exception as e:
-                        self.logger.log_error(f"molecular_variation_{i}", e, {"smiles": smiles})
-                        # Use original if variation fails
-                        varied_smiles.append(smiles)
-                
-                # Create molecule objects with error handling
+                # Select base molecules with retry logic
+                attempts = 0
+                max_attempts = kwargs.get('max_attempts', 3)
                 molecules = []
                 failed_molecules = 0
                 
-                for i, smiles in enumerate(varied_smiles):
+                while len(molecules) < num_molecules and attempts < max_attempts:
+                    attempts += 1
+                    
                     try:
-                        mol = Molecule(smiles, description=prompt)
+                        # Select base molecules
+                        needed_molecules = num_molecules - len(molecules)
+                        base_smiles = self._select_molecules(category_scores, needed_molecules * 2)  # Generate extra
+                        self.logger.logger.debug(f"Selected {len(base_smiles)} base molecules for request {request_id}")
                         
-                        # Validate molecule
-                        if not mol.is_valid:
-                            self.logger.logger.warning(f"Invalid molecule generated: {smiles}")
-                            failed_molecules += 1
-                            continue
-                        
-                        # Safety filtering with error handling
-                        if safety_filter:
+                        # Add variations with error handling
+                        for i, smiles in enumerate(base_smiles):
+                            if len(molecules) >= num_molecules:
+                                break
+                            
                             try:
-                                safety = mol.get_safety_profile()
-                                if safety.score < 50:  # Filter out unsafe molecules
-                                    self.logger.logger.debug(f"Filtered unsafe molecule: {smiles} (score: {safety.score})")
+                                varied_smiles = self._add_molecular_variation(smiles)
+                                mol = Molecule(varied_smiles, description=prompt)
+                                
+                                # Validate molecule
+                                if not mol.is_valid:
+                                    self.logger.logger.warning(f"Invalid molecule generated: {varied_smiles}")
+                                    failed_molecules += 1
                                     continue
-                            except Exception as e:
-                                self.logger.log_error(f"safety_evaluation_{i}", e, {"smiles": smiles})
-                                # If safety evaluation fails, be conservative and skip
+                                
+                                # Safety filtering with enhanced checks
                                 if safety_filter:
-                                    continue
-                        
-                        molecules.append(mol)
+                                    try:
+                                        safety = mol.get_safety_profile()
+                                        min_safety_score = kwargs.get('min_safety_score', 50)
+                                        if safety.score < min_safety_score:
+                                            self.logger.logger.debug(f"Filtered unsafe molecule: {varied_smiles} (score: {safety.score})")
+                                            continue
+                                        
+                                        # Additional safety checks
+                                        if safety.allergens and len(safety.allergens) > 2:
+                                            continue
+                                    except Exception as e:
+                                        self.logger.log_error(f"safety_evaluation_{i}", e, {"smiles": varied_smiles})
+                                        # If safety evaluation fails, be conservative and skip
+                                        if safety_filter:
+                                            continue
+                                
+                                molecules.append(mol)
+                                
+                            except Exception as e:
+                                self.logger.log_error(f"molecule_creation_{i}", e, {"smiles": smiles})
+                                failed_molecules += 1
+                                continue
                         
                     except Exception as e:
-                        self.logger.log_error(f"molecule_creation_{i}", e, {"smiles": smiles})
-                        failed_molecules += 1
-                        continue
+                        self.logger.log_error("generation_attempt", e, {"attempt": attempts})
+                        
+                        if attempts >= max_attempts:
+                            break
                 
                 # Log generation statistics
                 generation_time = time.time() - start_time
@@ -285,26 +365,32 @@ class SmellDiffusion:
                 if failed_molecules > 0:
                     self.logger.logger.warning(f"Failed to create {failed_molecules} molecules in request {request_id}")
                 
-                # Ensure we have at least one molecule
+                # Ensure we have at least one molecule with fallback strategies
                 if not molecules and num_molecules > 0:
                     self.logger.logger.warning(f"No valid molecules generated, using fallback for request {request_id}")
-                    try:
-                        # Fallback to safest molecule
-                        safe_smiles = "CC(C)=CCCC(C)=CCO"  # Geraniol - generally safe
-                        fallback_mol = Molecule(safe_smiles, description=f"Fallback for: {prompt}")
-                        molecules.append(fallback_mol)
-                    except Exception as e:
-                        self.logger.log_error("fallback_molecule_creation", e)
-                        raise RuntimeError("Failed to generate any molecules, including fallback")
+                    fallback_molecules = self._get_fallback_molecules(prompt, num_molecules)
+                    molecules.extend(fallback_molecules)
+                
+                # Final validation and cleanup
+                valid_molecules = []
+                for mol in molecules:
+                    if mol and mol.is_valid:
+                        valid_molecules.append(mol)
+                
+                # Ensure we don't exceed requested number
+                valid_molecules = valid_molecules[:num_molecules]
+                
+                # Update performance stats
+                self._update_performance_stats(generation_time)
                 
                 # Return appropriate format
                 if num_molecules == 1:
-                    result = molecules[0] if molecules else None
+                    result = valid_molecules[0] if valid_molecules else None
                     if result is None:
                         raise RuntimeError("Failed to generate any molecules")
                     return result
                 else:
-                    return molecules[:num_molecules]
+                    return valid_molecules
                     
             except ValidationError:
                 # Re-raise validation errors
@@ -317,7 +403,6 @@ class SmellDiffusion:
                     "prompt": prompt
                 })
                 raise
-    
     
     @contextmanager
     def _error_handling_context(self, operation: str, **context):
@@ -338,6 +423,112 @@ class SmellDiffusion:
             })
             raise
     
+    def _get_fallback_molecules(self, prompt: str, num_molecules: int) -> List[Molecule]:
+        """Get fallback molecules when generation fails."""
+        fallback_molecules = []
+        
+        # Use safest known molecules as fallbacks
+        safe_smiles = [
+            "CC(C)=CCCC(C)=CCO",      # Geraniol
+            "CC(C)CCCC(C)CCO",        # Citronellol  
+            "COC1=C(C=CC(=C1)C=O)O",  # Vanillin
+            "CC1=CC=C(C=C1)C=O",      # p-Tolualdehyde
+            "CC1=CCC(CC1)C(C)(C)O"    # Linalool
+        ]
+        
+        for i, smiles in enumerate(safe_smiles):
+            if len(fallback_molecules) >= num_molecules:
+                break
+            
+            try:
+                mol = Molecule(smiles, description=f"Fallback for: {prompt}")
+                if mol.is_valid:
+                    fallback_molecules.append(mol)
+            except Exception:
+                continue
+        
+        return fallback_molecules
+    
+    def _update_performance_stats(self, generation_time: float) -> None:
+        """Update performance statistics."""
+        # Update average generation time
+        current_avg = self._performance_stats["avg_generation_time"]
+        total_gens = self._performance_stats["generations"]
+        
+        if total_gens > 0:
+            self._performance_stats["avg_generation_time"] = (
+                (current_avg * (total_gens - 1) + generation_time) / total_gens
+            )
+        else:
+            self._performance_stats["avg_generation_time"] = generation_time
+    
+    def batch_generate(self, prompts: List[str], **kwargs) -> List[List[Molecule]]:
+        """Generate molecules for multiple prompts with optimized batching."""
+        from ..utils.async_utils import AsyncBatchProcessor
+        
+        try:
+            # Use batch processor for efficient parallel processing
+            batch_processor = AsyncBatchProcessor(
+                batch_size=kwargs.get('batch_size', 3),
+                max_concurrent_batches=kwargs.get('max_concurrent', 2)
+            )
+            
+            def generate_single(prompt: str):
+                return self.generate(prompt=prompt, **kwargs)
+            
+            # Process in batches
+            import asyncio
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+            try:
+                results = loop.run_until_complete(
+                    batch_processor.process_items(prompts, generate_single)
+                )
+                return results
+            finally:
+                loop.close()
+                
+        except Exception as e:
+            self.logger.log_error("batch_generation", e)
+            
+            # Fallback to sequential processing
+            results = []
+            for prompt in prompts:
+                try:
+                    result = self.generate(prompt=prompt, **kwargs)
+                    results.append([result] if not isinstance(result, list) else result)
+                except Exception:
+                    results.append([])
+            
+            return results
+    
+    def get_performance_stats(self) -> Dict[str, Any]:
+        """Get performance statistics."""
+        return {
+            **self._performance_stats,
+            "model_loaded": self._is_loaded,
+            "cache_size": len(self._cache),
+            "device": getattr(self, 'device', 'unknown'),
+            "error_count": self._error_count,
+            "error_rate": self._error_count / max(self._generation_count, 1)
+        }
+    
+    def optimize_for_throughput(self) -> None:
+        """Optimize model for high-throughput scenarios."""
+        # Pre-warm cache with common patterns
+        common_prompts = [
+            "fresh citrus", "floral rose", "woody cedar", 
+            "vanilla sweet", "musky warm", "aquatic marine"
+        ]
+        
+        for prompt in common_prompts:
+            try:
+                self._analyze_prompt_cached(prompt)
+            except:
+                pass
+    
+    @cached(ttl=1800)  # Cache for 30 minutes
     def get_model_info(self) -> Dict[str, Any]:
         """Get comprehensive model information with error handling."""
         try:
@@ -348,7 +539,10 @@ class SmellDiffusion:
                 "error_count": self._error_count,
                 "supported_categories": list(self.SCENT_KEYWORDS.keys()),
                 "database_size": {cat: len(mols) for cat, mols in self.FRAGRANCE_DATABASE.items()},
-                "total_molecules": sum(len(mols) for mols in self.FRAGRANCE_DATABASE.values())
+                "total_molecules": sum(len(mols) for mols in self.FRAGRANCE_DATABASE.values()),
+                "version": "0.1.0",
+                "capabilities": ["text_to_molecule", "safety_filtering", "multi_category"],
+                "device": getattr(self, 'device', 'unknown')
             }
         except Exception as e:
             self.logger.log_error("get_model_info", e)
@@ -452,3 +646,4 @@ class SmellDiffusion:
                 f"_is_loaded={self._is_loaded}, "
                 f"_generation_count={self._generation_count}, "
                 f"_error_count={self._error_count})")
+```

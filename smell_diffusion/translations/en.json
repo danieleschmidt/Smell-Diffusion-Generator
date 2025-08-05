@@ -1,0 +1,57 @@
+{
+  "safety": {
+    "report": {
+      "title": "Safety Evaluation Report",
+      "overall_score": "Overall Safety Score: {score}/100",
+      "ifra_compliant": "IFRA Compliant",
+      "ifra_non_compliant": "Not IFRA Compliant",
+      "recommendations": "Safety Recommendations"
+    },
+    "warnings": {
+      "high_molecular_weight": "High molecular weight may reduce volatility",
+      "skin_sensitizer": "Potential skin sensitizer - use with caution",
+      "eye_irritant": "May cause eye irritation",
+      "respiratory_irritant": "May cause respiratory irritation",
+      "environmental_concern": "Environmental impact requires assessment"
+    }
+  },
+  "fragrance_notes": {
+    "bergamot": "Bergamot",
+    "lemon": "Lemon",
+    "orange": "Orange",
+    "grapefruit": "Grapefruit",
+    "lime": "Lime",
+    "rose": "Rose",
+    "jasmine": "Jasmine",
+    "lavender": "Lavender",
+    "lily": "Lily",
+    "geranium": "Geranium",
+    "sandalwood": "Sandalwood",
+    "cedar": "Cedar",
+    "pine": "Pine",
+    "oak": "Oak",
+    "vanilla": "Vanilla",
+    "amber": "Amber",
+    "musk": "Musk",
+    "patchouli": "Patchouli"
+  },
+  "compliance": {
+    "unknown_region": "Unknown region: {region}",
+    "molecular_weight_too_high": "Molecular weight exceeds regulatory limits",
+    "allergens_detected": "{count} potential allergens detected",
+    "evaluation_error": "Error during compliance evaluation",
+    "recommend_reformulation": "Consider reformulation to meet regulatory requirements"
+  },
+  "generation": {
+    "success": "Successfully generated {count} molecules",
+    "partial_success": "Generated {valid} out of {total} requested molecules",
+    "failure": "Generation failed: {error}",
+    "safety_filtered": "{count} molecules filtered for safety reasons"
+  },
+  "validation": {
+    "invalid_smiles": "Invalid SMILES structure provided",
+    "prompt_too_short": "Prompt is too short (minimum {min} characters)",
+    "prompt_too_long": "Prompt is too long (maximum {max} characters)",
+    "invalid_parameters": "Invalid generation parameters"
+  }
+}

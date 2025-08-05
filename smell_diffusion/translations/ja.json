@@ -1,0 +1,57 @@
+{
+  "safety": {
+    "report": {
+      "title": "安全性評価レポート",
+      "overall_score": "総合安全性スコア: {score}/100",
+      "ifra_compliant": "IFRA準拠",
+      "ifra_non_compliant": "IFRA非準拠",
+      "recommendations": "安全性に関する推奨事項"
+    },
+    "warnings": {
+      "high_molecular_weight": "高分子量は揮発性を低下させる可能性があります",
+      "skin_sensitizer": "皮膚感作性の可能性 - 注意して使用してください",
+      "eye_irritant": "目の刺激を引き起こす可能性があります",
+      "respiratory_irritant": "呼吸器刺激を引き起こす可能性があります",
+      "environmental_concern": "環境への影響評価が必要です"
+    }
+  },
+  "fragrance_notes": {
+    "bergamot": "ベルガモット",
+    "lemon": "レモン",
+    "orange": "オレンジ",
+    "grapefruit": "グレープフルーツ",
+    "lime": "ライム",
+    "rose": "ローズ",
+    "jasmine": "ジャスミン",
+    "lavender": "ラベンダー",
+    "lily": "リリー",
+    "geranium": "ゼラニウム",
+    "sandalwood": "サンダルウッド",
+    "cedar": "シダー",
+    "pine": "パイン",
+    "oak": "オーク",
+    "vanilla": "バニラ",
+    "amber": "アンバー",
+    "musk": "ムスク",
+    "patchouli": "パチョリ"
+  },
+  "compliance": {
+    "unknown_region": "不明な地域: {region}",
+    "molecular_weight_too_high": "分子量が規制限界を超えています",
+    "allergens_detected": "{count}個の潜在的アレルゲンが検出されました",
+    "evaluation_error": "コンプライアンス評価中にエラーが発生しました",
+    "recommend_reformulation": "規制要件を満たすための再処方を検討してください"
+  },
+  "generation": {
+    "success": "{count}個の分子の生成に成功しました",
+    "partial_success": "要求された{total}個中{valid}個の分子を生成しました",
+    "failure": "生成が失敗しました: {error}",
+    "safety_filtered": "安全上の理由で{count}個の分子がフィルタリングされました"
+  },
+  "validation": {
+    "invalid_smiles": "無効なSMILES構造が提供されました",
+    "prompt_too_short": "テキストが短すぎます（最小{min}文字）",
+    "prompt_too_long": "テキストが長すぎます（最大{max}文字）",
+    "invalid_parameters": "無効な生成パラメータ"
+  }
+}

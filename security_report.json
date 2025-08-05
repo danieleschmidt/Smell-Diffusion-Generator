@@ -1,0 +1,108 @@
+{
+  "security": {
+    "passed": 4,
+    "failed": 0,
+    "issues": []
+  },
+  "quality": {
+    "passed": 0,
+    "failed": 0,
+    "issues": []
+  },
+  "dependencies": {
+    "passed": 1,
+    "failed": 0,
+    "issues": []
+  },
+  "code_quality": {
+    "passed": 0,
+    "failed": 1,
+    "issues": [
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/cli.py",
+        "line": 33,
+        "description": "Function 'generate' is too long (60 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/cli.py",
+        "line": 133,
+        "description": "Function 'create_accord' is too long (53 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/cli.py",
+        "line": 235,
+        "description": "Function 'health' is too long (80 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/cli.py",
+        "line": 315,
+        "description": "Function 'benchmark' is too long (92 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/api/server.py",
+        "line": 441,
+        "description": "Function 'note_to_dict' is too long (72 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/core/molecule.py",
+        "line": 85,
+        "description": "Function '_predict_fragrance_notes' is too long (57 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/core/smell_diffusion.py",
+        "line": 192,
+        "description": "Function 'generate' is too long (130 lines)"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/core/smell_diffusion.py",
+        "line": 81,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/core/smell_diffusion.py",
+        "line": 98,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/design/accord.py",
+        "line": 110,
+        "description": "Function '_generate_notes_for_category' is too long (64 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/multimodal/generator.py",
+        "line": 22,
+        "description": "Function 'generate' is too long (56 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/safety/evaluator.py",
+        "line": 64,
+        "description": "Function 'comprehensive_evaluation' is too long (140 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/utils/config.py",
+        "line": 178,
+        "description": "Function '_load_env_variables' is too long (53 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/utils/i18n.py",
+        "line": 267,
+        "description": "Function 'check_regional_compliance' is too long (54 lines)"
+      }
+    ]
+  },
+  "overall_score": 83.33333333333334
+}

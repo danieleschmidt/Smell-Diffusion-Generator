@@ -162,9 +162,11 @@ def log_molecule_generation(func: Callable) -> Callable:
         num_molecules = kwargs.get('num_molecules', 1)
         safety_filter = kwargs.get('safety_filter', True)
         
-        # Log request
+        # Log request - filter out duplicate kwargs
+        filtered_kwargs = {k: v for k, v in kwargs.items() 
+                          if k not in ['prompt', 'num_molecules', 'safety_filter']}
         request_id = logger.log_generation_request(
-            prompt, num_molecules, safety_filter, **kwargs
+            prompt, num_molecules, safety_filter, **filtered_kwargs
         )
         
         start_time = time.time()
