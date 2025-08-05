@@ -1,0 +1,57 @@
+{
+  "safety": {
+    "report": {
+      "title": "Sicherheitsbewertungsbericht",
+      "overall_score": "Gesamtsicherheitswert: {score}/100",
+      "ifra_compliant": "IFRA-konform",
+      "ifra_non_compliant": "Nicht IFRA-konform",
+      "recommendations": "Sicherheitsempfehlungen"
+    },
+    "warnings": {
+      "high_molecular_weight": "Hohes Molekulargewicht kann Flüchtigkeit reduzieren",
+      "skin_sensitizer": "Potentieller Hautsensibilisator - mit Vorsicht verwenden",
+      "eye_irritant": "Kann Augenreizungen verursachen",
+      "respiratory_irritant": "Kann Atemwegsreizungen verursachen",
+      "environmental_concern": "Umweltauswirkungen erfordern Bewertung"
+    }
+  },
+  "fragrance_notes": {
+    "bergamot": "Bergamotte",
+    "lemon": "Zitrone",
+    "orange": "Orange",
+    "grapefruit": "Grapefruit",
+    "lime": "Limette",
+    "rose": "Rose",
+    "jasmine": "Jasmin",
+    "lavender": "Lavendel",
+    "lily": "Lilie",
+    "geranium": "Geranie",
+    "sandalwood": "Sandelholz",
+    "cedar": "Zeder",
+    "pine": "Kiefer",
+    "oak": "Eiche",
+    "vanilla": "Vanille",
+    "amber": "Bernstein",
+    "musk": "Moschus",
+    "patchouli": "Patchouli"
+  },
+  "compliance": {
+    "unknown_region": "Unbekannte Region: {region}",
+    "molecular_weight_too_high": "Molekulargewicht überschreitet regulatorische Grenzen",
+    "allergens_detected": "{count} potentielle Allergene entdeckt",
+    "evaluation_error": "Fehler bei der Compliance-Bewertung",
+    "recommend_reformulation": "Erwägen Sie eine Neuformulierung zur Erfüllung regulatorischer Anforderungen"
+  },
+  "generation": {
+    "success": "Erfolgreich {count} Moleküle generiert",
+    "partial_success": "{valid} von {total} angeforderten Molekülen generiert",
+    "failure": "Generierung fehlgeschlagen: {error}",
+    "safety_filtered": "{count} Moleküle aus Sicherheitsgründen gefiltert"
+  },
+  "validation": {
+    "invalid_smiles": "Ungültige SMILES-Struktur bereitgestellt",
+    "prompt_too_short": "Text zu kurz (Minimum {min} Zeichen)",
+    "prompt_too_long": "Text zu lang (Maximum {max} Zeichen)",
+    "invalid_parameters": "Ungültige Generierungsparameter"
+  }
+}

@@ -113,9 +113,9 @@ class ConfigManager:
         config_file = self._find_config_file()
         if config_file:
             config_data = self._load_config_file(config_file)
-            self.logger.info(f"Loaded configuration from {config_file}")
+            self.logger.logger.info(f"Loaded configuration from {config_file}")
         else:
-            self.logger.info("No configuration file found, using defaults")
+            self.logger.logger.info("No configuration file found, using defaults")
         
         # Override with environment variables
         env_overrides = self._load_env_variables()
@@ -151,7 +151,7 @@ class ConfigManager:
             with open(path, 'w') as f:
                 yaml.dump(config_dict, f, default_flow_style=False, indent=2)
         
-        self.logger.info(f"Configuration saved to {path}")
+        self.logger.logger.info(f"Configuration saved to {path}")
     
     def _find_config_file(self) -> Optional[Path]:
         """Find configuration file in default locations."""
@@ -292,7 +292,7 @@ class ConfigManager:
             path = self.DEFAULT_CONFIG_LOCATIONS[0]
         
         self.save_config(default_config, path)
-        self.logger.info(f"Created default configuration at {path}")
+        self.logger.logger.info(f"Created default configuration at {path}")
 
 
 # Global configuration manager

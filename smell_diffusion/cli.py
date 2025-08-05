@@ -16,8 +16,9 @@ from .multimodal.generator import MultiModalGenerator
 from .editing.editor import MoleculeEditor
 from .design.accord import AccordDesigner
 from .utils.config import get_config, ConfigManager
-from .utils.logging import SmellDiffusionLogger
-from .utils.validation import ValidationError
+from .utils.logging import SmellDiffusionLogger, health_monitor
+from .utils.validation import ValidationError, validate_inputs
+from .utils.caching import get_cache
 
 app = typer.Typer(
     name="smell-diffusion",
@@ -228,6 +229,179 @@ def config(
     
     except Exception as e:
         console.print(f"❌ Error: [bold red]{e}[/bold red]")
+        raise typer.Exit(1)
+
+
+@app.command()
+def health():
+    """Check system health and performance metrics."""
+    try:
+        console.print("🔍 [bold cyan]System Health Check[/bold cyan]\n")
+        
+        # Get health status
+        health_status = health_monitor.get_health_status()
+        
+        # Display health metrics
+        health_color = "green" if health_status["status"] == "healthy" else "yellow"
+        
+        health_info = f"""
+Status: {health_status["status"].upper()}
+Uptime: {health_status["uptime_seconds"]:.1f} seconds
+Total Generations: {health_status["total_generations"]}
+Total Errors: {health_status["total_errors"]}
+Error Rate: {health_status["error_rate"]:.2%}
+"""
+        
+        console.print(Panel(health_info.strip(), title="Health Status", border_style=health_color))
+        
+        # Get cache stats
+        try:
+            cache_stats = get_cache().get_stats()
+            
+            cache_info = f"""
+Memory Cache:
+  - Size: {cache_stats['memory']['size']}/{cache_stats['memory']['max_size']}
+  - Hit Rate: {cache_stats['memory']['hit_rate']:.2%}
+  - Utilization: {cache_stats['memory']['utilization']:.2%}
+
+Disk Cache:
+  - Size: {cache_stats['disk']['size']} files
+  - Max Size: {cache_stats['disk']['max_size_mb']} MB
+"""
+            
+            console.print(Panel(cache_info.strip(), title="Cache Statistics", border_style="blue"))
+            
+        except Exception as e:
+            console.print(f"⚠️ Cache stats unavailable: {e}")
+        
+        # Test basic functionality
+        console.print("\n🧪 Testing Basic Functionality...")
+        
+        try:
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                console=console
+            ) as progress:
+                task = progress.add_task("Testing model loading...", total=None)
+                
+                model = SmellDiffusion.from_pretrained("smell-diffusion-base-v1")
+                progress.update(task, description="Testing generation...")
+                
+                test_molecule = model.generate(
+                    prompt="test citrus note",
+                    num_molecules=1,
+                    safety_filter=True
+                )
+                
+                progress.update(task, description="Testing safety evaluation...")
+                
+                if test_molecule:
+                    evaluator = SafetyEvaluator()
+                    safety = evaluator.evaluate(test_molecule)
+                    
+                    console.print("✅ [bold green]All systems operational[/bold green]")
+                else:
+                    console.print("⚠️ [bold yellow]Generation test failed[/bold yellow]")
+                
+        except Exception as e:
+            console.print(f"❌ [bold red]System test failed: {e}[/bold red]")
+        
+    except Exception as e:
+        console.print(f"❌ Health check failed: [bold red]{e}[/bold red]")
+        raise typer.Exit(1)
+
+
+@app.command()
+def benchmark(
+    iterations: int = typer.Option(10, "--iterations", "-i", help="Number of test iterations"),
+    prompt: str = typer.Option("fresh citrus fragrance", "--prompt", "-p", help="Test prompt")
+):
+    """Run performance benchmark."""
+    try:
+        console.print(f"🏃 Running benchmark with {iterations} iterations...")
+        
+        model = SmellDiffusion.from_pretrained("smell-diffusion-base-v1")
+        evaluator = SafetyEvaluator()
+        
+        results = {
+            "generation_times": [],
+            "safety_times": [],
+            "success_count": 0,
+            "error_count": 0
+        }
+        
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console
+        ) as progress:
+            task = progress.add_task("Running benchmark...", total=iterations)
+            
+            for i in range(iterations):
+                try:
+                    # Time generation
+                    import time
+                    start_time = time.time()
+                    
+                    molecule = model.generate(
+                        prompt=prompt,
+                        num_molecules=1,
+                        safety_filter=True
+                    )
+                    
+                    gen_time = time.time() - start_time
+                    results["generation_times"].append(gen_time)
+                    
+                    # Time safety evaluation
+                    if molecule:
+                        start_time = time.time()
+                        safety = evaluator.evaluate(molecule)
+                        safety_time = time.time() - start_time
+                        results["safety_times"].append(safety_time)
+                        results["success_count"] += 1
+                    else:
+                        results["error_count"] += 1
+                        
+                except Exception as e:
+                    results["error_count"] += 1
+                    logger.log_error("benchmark_iteration", e, {"iteration": i})
+                
+                progress.advance(task)
+        
+        # Calculate statistics
+        if results["generation_times"]:
+            avg_gen_time = sum(results["generation_times"]) / len(results["generation_times"])
+            max_gen_time = max(results["generation_times"])
+            min_gen_time = min(results["generation_times"])
+        else:
+            avg_gen_time = max_gen_time = min_gen_time = 0
+        
+        if results["safety_times"]:
+            avg_safety_time = sum(results["safety_times"]) / len(results["safety_times"])
+        else:
+            avg_safety_time = 0
+        
+        # Display results
+        benchmark_info = f"""
+Total Iterations: {iterations}
+Successful: {results["success_count"]}
+Failed: {results["error_count"]}
+Success Rate: {results["success_count"]/iterations:.2%}
+
+Generation Performance:
+  - Average Time: {avg_gen_time:.3f}s
+  - Min Time: {min_gen_time:.3f}s
+  - Max Time: {max_gen_time:.3f}s
+
+Safety Evaluation:
+  - Average Time: {avg_safety_time:.3f}s
+"""
+        
+        console.print(Panel(benchmark_info.strip(), title="Benchmark Results", border_style="green"))
+        
+    except Exception as e:
+        console.print(f"❌ Benchmark failed: [bold red]{e}[/bold red]")
         raise typer.Exit(1)
 
 

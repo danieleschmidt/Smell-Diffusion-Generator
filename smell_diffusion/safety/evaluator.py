@@ -3,6 +3,9 @@
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
 from ..core.molecule import Molecule, SafetyProfile
+from ..utils.logging import performance_monitor, SmellDiffusionLogger
+from ..utils.validation import ValidationError, SafetyValidator
+from ..utils.caching import cached
 
 
 @dataclass
@@ -51,56 +54,153 @@ class SafetyEvaluator:
     
     def __init__(self):
         """Initialize safety evaluator."""
-        pass
+        self.logger = SmellDiffusionLogger("safety_evaluator")
+        self._validation_errors = []
     
     def evaluate(self, molecule: Molecule) -> SafetyProfile:
         """Perform basic safety evaluation."""
         return molecule.get_safety_profile()
     
+    @performance_monitor("comprehensive_safety_evaluation")
     def comprehensive_evaluation(self, molecule: Molecule) -> ComprehensiveSafetyReport:
         """Perform comprehensive safety evaluation."""
-        if not molecule.is_valid:
+        try:
+            # Input validation
+            if not molecule:
+                raise ValidationError("Molecule object is None")
+            
+            if not molecule.is_valid:
+                return ComprehensiveSafetyReport(
+                    molecule_smiles=molecule.smiles or "INVALID",
+                    overall_score=0.0,
+                    ifra_compliant=False,
+                    regulatory_status={"EU": "Invalid", "US": "Invalid", "IFRA": "Invalid"},
+                    toxicity_predictions={"error": "Invalid molecule structure"},
+                    allergen_analysis={"detected": [], "risk_level": "unknown", "error": "Invalid structure"},
+                    environmental_impact={"biodegradability": "unknown", "error": "Invalid structure"},
+                    recommendations=["Molecule structure is invalid", "Cannot perform safety evaluation"]
+                )
+            
+            # Check for prohibited structures first
+            try:
+                violations = SafetyValidator.check_prohibited_structures(molecule.smiles)
+                if violations:
+                    self.logger.logger.warning(f"Safety violations detected: {violations}")
+            except Exception as e:
+                self.logger.log_error("prohibited_structure_check", e)
+                violations = []
+            
+            # Basic safety profile with error handling
+            try:
+                basic_safety = self.evaluate(molecule)
+            except Exception as e:
+                self.logger.log_error("basic_safety_evaluation", e)
+                basic_safety = SafetyProfile(0.0, False, [], ["Error in basic safety evaluation"])
+            
+            # Allergen screening with error handling
+            try:
+                allergen_results = self._screen_allergens(molecule)
+            except Exception as e:
+                self.logger.log_error("allergen_screening", e)
+                allergen_results = {
+                    "detected": [],
+                    "total_count": 0,
+                    "risk_level": "unknown",
+                    "error": str(e)
+                }
+            
+            # Regulatory check with error handling
+            try:
+                regulatory_status = self._check_regulatory_status(molecule)
+            except Exception as e:
+                self.logger.log_error("regulatory_check", e)
+                regulatory_status = {
+                    "EU": "Error",
+                    "US": "Error", 
+                    "IFRA": "Error",
+                    "error": str(e)
+                }
+            
+            # Environmental assessment with error handling
+            try:
+                environmental = self._assess_environmental_impact(molecule)
+            except Exception as e:
+                self.logger.log_error("environmental_assessment", e)
+                environmental = {
+                    "biodegradability": "unknown",
+                    "bioaccumulation": "unknown",
+                    "aquatic_toxicity": "unknown",
+                    "error": str(e)
+                }
+            
+            # Toxicity predictions with error handling
+            try:
+                toxicity = self._predict_toxicity(molecule)
+            except Exception as e:
+                self.logger.log_error("toxicity_prediction", e)
+                toxicity = {
+                    "error": str(e),
+                    "prediction_failed": True
+                }
+            
+            # Generate recommendations with error handling
+            try:
+                recommendations = self._generate_recommendations(
+                    molecule, basic_safety, allergen_results, environmental
+                )
+                
+                # Add any violation warnings
+                if violations:
+                    recommendations.insert(0, f"CRITICAL: {'; '.join(violations)}")
+                    
+            except Exception as e:
+                self.logger.log_error("recommendation_generation", e)
+                recommendations = ["Error generating recommendations"]
+                if violations:
+                    recommendations.insert(0, f"CRITICAL: {'; '.join(violations)}")
+            
+            # Calculate overall score with error considerations
+            overall_score = basic_safety.score
+            
+            # Penalize for errors
+            if "error" in allergen_results:
+                overall_score *= 0.8
+            if "error" in regulatory_status:
+                overall_score *= 0.8
+            if "error" in environmental:
+                overall_score *= 0.8
+            if "error" in toxicity:
+                overall_score *= 0.8
+            
+            # Severe penalty for safety violations
+            if violations:
+                overall_score = min(overall_score, 25.0)
+            
             return ComprehensiveSafetyReport(
                 molecule_smiles=molecule.smiles,
+                overall_score=overall_score,
+                ifra_compliant=basic_safety.ifra_compliant and not violations,
+                regulatory_status=regulatory_status,
+                toxicity_predictions=toxicity,
+                allergen_analysis=allergen_results,
+                environmental_impact=environmental,
+                recommendations=recommendations
+            )
+            
+        except Exception as e:
+            self.logger.log_error("comprehensive_evaluation", e)
+            
+            # Return error report
+            return ComprehensiveSafetyReport(
+                molecule_smiles=getattr(molecule, 'smiles', 'UNKNOWN'),
                 overall_score=0.0,
                 ifra_compliant=False,
-                regulatory_status={"EU": "Invalid", "US": "Invalid"},
-                toxicity_predictions={},
-                allergen_analysis={"detected": [], "risk_level": "unknown"},
-                environmental_impact={"biodegradability": "unknown"},
-                recommendations=["Molecule structure is invalid"]
+                regulatory_status={"error": "Evaluation failed"},
+                toxicity_predictions={"error": "Evaluation failed"},
+                allergen_analysis={"error": "Evaluation failed"},
+                environmental_impact={"error": "Evaluation failed"},
+                recommendations=[f"Safety evaluation failed: {str(e)}"]
             )
-        
-        # Basic safety profile
-        basic_safety = self.evaluate(molecule)
-        
-        # Allergen screening
-        allergen_results = self._screen_allergens(molecule)
-        
-        # Regulatory check
-        regulatory_status = self._check_regulatory_status(molecule)
-        
-        # Environmental assessment
-        environmental = self._assess_environmental_impact(molecule)
-        
-        # Toxicity predictions
-        toxicity = self._predict_toxicity(molecule)
-        
-        # Generate recommendations
-        recommendations = self._generate_recommendations(
-            molecule, basic_safety, allergen_results, environmental
-        )
-        
-        return ComprehensiveSafetyReport(
-            molecule_smiles=molecule.smiles,
-            overall_score=basic_safety.score,
-            ifra_compliant=basic_safety.ifra_compliant,
-            regulatory_status=regulatory_status,
-            toxicity_predictions=toxicity,
-            allergen_analysis=allergen_results,
-            environmental_impact=environmental,
-            recommendations=recommendations
-        )
     
     def _screen_allergens(self, molecule: Molecule) -> Dict[str, Any]:
         """Screen for known allergens."""

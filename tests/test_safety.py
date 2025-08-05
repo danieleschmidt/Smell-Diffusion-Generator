@@ -1,10 +1,11 @@
 """Tests for safety evaluation functionality."""
 
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, MagicMock
 
 from smell_diffusion.safety.evaluator import SafetyEvaluator, ComprehensiveSafetyReport
 from smell_diffusion.core.molecule import Molecule, SafetyProfile
+from smell_diffusion.utils.validation import ValidationError, SafetyValidator
 
 
 class TestSafetyEvaluator:

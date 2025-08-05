@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  smell-diffusion:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - SMELL_DIFFUSION_LOG_LEVEL=INFO
+      - SMELL_DIFFUSION_NUM_MOLECULES=5
+      - SMELL_DIFFUSION_GUIDANCE_SCALE=7.5
+      - SMELL_DIFFUSION_SAFETY_FILTER=true
+      - SMELL_DIFFUSION_MIN_SAFETY_SCORE=70.0
+      - SMELL_DIFFUSION_DEVICE=auto
+    volumes:
+      - cache_data:/home/appuser/.smell_diffusion/cache
+      - log_data:/app/logs
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - smell_diffusion_network
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443" 
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      smell-diffusion:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - smell_diffusion_network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - smell_diffusion_network
+
+  monitoring:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    networks:
+      - smell_diffusion_network
+
+volumes:
+  cache_data:
+    driver: local
+  log_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+
+networks:
+  smell_diffusion_network:
+    driver: bridge
