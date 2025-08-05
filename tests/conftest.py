@@ -3,8 +3,16 @@
 import pytest
 import tempfile
 import shutil
+import sys
 from pathlib import Path
 from unittest.mock import Mock, patch
+
+# Add parent directory to path and import mocks
+repo_root = Path(__file__).parent.parent
+sys.path.insert(0, str(repo_root))
+
+# Import mock dependencies first
+import mock_deps
 
 from smell_diffusion.core.smell_diffusion import SmellDiffusion
 from smell_diffusion.core.molecule import Molecule

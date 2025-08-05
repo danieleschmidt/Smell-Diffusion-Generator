@@ -1,0 +1,57 @@
+{
+  "safety": {
+    "report": {
+      "title": "Informe de Evaluación de Seguridad",
+      "overall_score": "Puntuación General de Seguridad: {score}/100",
+      "ifra_compliant": "Cumple con IFRA",
+      "ifra_non_compliant": "No Cumple con IFRA",
+      "recommendations": "Recomendaciones de Seguridad"
+    },
+    "warnings": {
+      "high_molecular_weight": "Alto peso molecular puede reducir la volatilidad",
+      "skin_sensitizer": "Posible sensibilizador cutáneo - usar con precaución",
+      "eye_irritant": "Puede causar irritación ocular",
+      "respiratory_irritant": "Puede causar irritación respiratoria",
+      "environmental_concern": "El impacto ambiental requiere evaluación"
+    }
+  },
+  "fragrance_notes": {
+    "bergamot": "Bergamota",
+    "lemon": "Limón",
+    "orange": "Naranja",
+    "grapefruit": "Pomelo",
+    "lime": "Lima",
+    "rose": "Rosa",
+    "jasmine": "Jazmín",
+    "lavender": "Lavanda",
+    "lily": "Lirio",
+    "geranium": "Geranio",
+    "sandalwood": "Sándalo",
+    "cedar": "Cedro",
+    "pine": "Pino",
+    "oak": "Roble",
+    "vanilla": "Vainilla",
+    "amber": "Ámbar",
+    "musk": "Almizcle",
+    "patchouli": "Pachulí"
+  },
+  "compliance": {
+    "unknown_region": "Región desconocida: {region}",
+    "molecular_weight_too_high": "El peso molecular excede los límites regulatorios",
+    "allergens_detected": "{count} alérgenos potenciales detectados",
+    "evaluation_error": "Error durante la evaluación de cumplimiento",
+    "recommend_reformulation": "Considere la reformulación para cumplir con los requisitos regulatorios"
+  },
+  "generation": {
+    "success": "Se generaron exitosamente {count} moléculas",
+    "partial_success": "Se generaron {valid} de {total} moléculas solicitadas",
+    "failure": "La generación falló: {error}",
+    "safety_filtered": "{count} moléculas filtradas por razones de seguridad"
+  },
+  "validation": {
+    "invalid_smiles": "Estructura SMILES inválida proporcionada",
+    "prompt_too_short": "El texto es demasiado corto (mínimo {min} caracteres)",
+    "prompt_too_long": "El texto es demasiado largo (máximo {max} caracteres)",
+    "invalid_parameters": "Parámetros de generación inválidos"
+  }
+}

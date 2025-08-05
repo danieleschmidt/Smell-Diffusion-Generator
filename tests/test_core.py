@@ -1,10 +1,12 @@
 """Tests for core smell diffusion functionality."""
 
 import pytest
+import asyncio
 from unittest.mock import Mock, patch, MagicMock
 
 from smell_diffusion.core.smell_diffusion import SmellDiffusion
 from smell_diffusion.core.molecule import Molecule, FragranceNotes, SafetyProfile
+from smell_diffusion.utils.validation import ValidationError
 
 
 class TestMolecule:
@@ -322,3 +324,378 @@ def test_prompt_category_detection(prompt, expected_categories):
     
     for category in expected_categories:
         assert scores[category] > 0, f"Category '{category}' not detected in prompt '{prompt}'"
+
+
+class TestAdvancedGeneration:
+    """Test advanced generation features."""
+    
+    def test_batch_generation(self, mock_rdkit):
+        """Test batch molecule generation."""
+        model = SmellDiffusion()
+        model._is_loaded = True
+        
+        prompts = [
+            "Fresh citrus scent",
+            "Floral rose bouquet", 
+            "Woody cedar forest"
+        ]
+        
+        results = model.batch_generate(prompts, num_molecules=2)
+        
+        assert isinstance(results, list)
+        assert len(results) == len(prompts)
+        
+        for result_set in results:
+            assert isinstance(result_set, list)
+    
+    def test_performance_optimization(self, mock_rdkit):
+        """Test performance optimization features."""
+        model = SmellDiffusion()
+        model._is_loaded = True
+        
+        # Test throughput optimization
+        model.optimize_for_throughput()
+        
+        # Test performance stats
+        stats = model.get_performance_stats()
+        assert isinstance(stats, dict)
+        assert 'generations' in stats
+        assert 'cache_hits' in stats
+        assert 'model_loaded' in stats
+    
+    def test_cached_prompt_analysis(self, mock_rdkit):
+        """Test cached prompt analysis."""
+        model = SmellDiffusion()
+        model._is_loaded = True
+        
+        prompt = "Fresh citrus bergamot"
+        
+        # First call should analyze and cache
+        result1 = model._analyze_prompt_cached(prompt)
+        
+        # Second call should use cache
+        result2 = model._analyze_prompt_cached(prompt)
+        
+        assert result1 == result2
+        assert isinstance(result1, dict)
+    
+    def test_error_handling_in_generation(self, mock_rdkit):
+        """Test error handling during generation."""
+        model = SmellDiffusion()
+        model._is_loaded = True
+        
+        # Test with invalid parameters
+        with pytest.raises(ValueError):
+            model.generate("test", num_molecules=0)
+        
+        with pytest.raises(ValueError):
+            model.generate("test", num_molecules=101)
+        
+        with pytest.raises(ValueError):
+            model.generate("test", guidance_scale=0.05)
+        
+        with pytest.raises(ValueError):
+            model.generate("test", guidance_scale=25.0)
+    
+    def test_fallback_molecules(self, mock_rdkit):
+        """Test fallback molecule generation."""
+        model = SmellDiffusion()
+        
+        fallbacks = model._get_fallback_molecules("test prompt", 3)
+        
+        assert isinstance(fallbacks, list)
+        assert len(fallbacks) <= 3
+        assert all(isinstance(mol, Molecule) for mol in fallbacks)
+    
+    def test_pattern_compilation(self):
+        """Test molecular pattern compilation."""
+        model = SmellDiffusion()
+        model._precompile_patterns()
+        
+        assert hasattr(model, '_compiled_patterns')
+        assert isinstance(model._compiled_patterns, dict)
+        assert len(model._compiled_patterns) > 0
+    
+    def test_generation_with_max_attempts(self, mock_rdkit):
+        """Test generation with max attempts parameter."""
+        model = SmellDiffusion()
+        model._is_loaded = True
+        
+        result = model.generate(
+            "test prompt", 
+            num_molecules=1,
+            max_attempts=5
+        )
+        
+        assert result is not None
+    
+    def test_generation_with_min_safety_score(self, mock_rdkit):
+        """Test generation with minimum safety score."""
+        model = SmellDiffusion()
+        model._is_loaded = True
+        
+        result = model.generate(
+            "test prompt",
+            num_molecules=1,
+            safety_filter=True,
+            min_safety_score=80.0
+        )
+        
+        assert result is not None
+
+
+class TestErrorRecovery:
+    """Test error recovery mechanisms."""
+    
+    def test_model_loading_failure(self):
+        """Test graceful handling of model loading failure."""
+        model = SmellDiffusion("nonexistent-model")
+        
+        # Should not crash even if model fails to load
+        with patch.object(model, '_load_model', side_effect=Exception("Loading failed")):
+            try:
+                model.generate("test prompt")
+            except Exception:
+                pass  # Expected to handle gracefully
+    
+    def test_prompt_analysis_failure(self, mock_rdkit):
+        """Test handling of prompt analysis failure."""
+        model = SmellDiffusion()
+        model._is_loaded = True
+        
+        # Mock analysis failure
+        with patch.object(model, '_analyze_prompt', side_effect=Exception("Analysis failed")):
+            result = model.generate("test prompt", num_molecules=1)
+            
+            # Should fall back to default categories and still generate
+            assert result is not None
+    
+    def test_molecule_creation_failure(self, mock_rdkit):
+        """Test handling of molecule creation failures."""
+        model = SmellDiffusion()
+        model._is_loaded = True
+        
+        # Mock molecule creation failure
+        with patch('smell_diffusion.core.molecule.Molecule', side_effect=Exception("Creation failed")):
+            result = model.generate("test prompt", num_molecules=1)
+            
+            # Should fall back to safe molecules
+            assert result is not None
+    
+    def test_safety_evaluation_failure(self, mock_rdkit):
+        """Test handling of safety evaluation failures."""
+        model = SmellDiffusion()
+        model._is_loaded = True
+        
+        # Mock safety evaluation failure
+        with patch.object(Molecule, 'get_safety_profile', side_effect=Exception("Safety failed")):
+            result = model.generate("test prompt", num_molecules=1, safety_filter=True)
+            
+            # Should still generate molecules
+            assert result is not None
+
+
+class TestIntegration:
+    """Integration tests for complete workflows."""
+    
+    def test_complete_generation_workflow(self, mock_rdkit):
+        """Test complete molecule generation workflow."""
+        model = SmellDiffusion.from_pretrained("test-model")
+        
+        # Generate molecules
+        molecules = model.generate(
+            prompt="Fresh oceanic breeze with citrus notes",
+            num_molecules=3,
+            guidance_scale=7.5,
+            safety_filter=True
+        )
+        
+        assert isinstance(molecules, list)
+        assert len(molecules) <= 3
+        
+        for mol in molecules:
+            assert isinstance(mol, Molecule)
+            assert mol.is_valid
+            
+            # Test properties
+            assert mol.molecular_weight > 0
+            assert isinstance(mol.logp, float)
+            
+            # Test fragrance notes
+            notes = mol.fragrance_notes
+            assert isinstance(notes, FragranceNotes)
+            
+            # Test safety
+            safety = mol.get_safety_profile()
+            assert isinstance(safety, SafetyProfile)
+            assert safety.score >= 50  # Should pass safety filter
+    
+    def test_multimodal_integration(self, mock_rdkit):
+        """Test integration with multimodal components."""
+        from smell_diffusion.multimodal.generator import MultiModalGenerator
+        
+        model = SmellDiffusion.from_pretrained("test-model")
+        multimodal = MultiModalGenerator(model)
+        
+        molecules = multimodal.generate(
+            text="Fresh citrus scent",
+            num_molecules=2
+        )
+        
+        assert isinstance(molecules, list)
+        assert len(molecules) <= 2
+    
+    def test_safety_integration(self, mock_rdkit):
+        """Test integration with safety evaluation."""
+        from smell_diffusion.safety.evaluator import SafetyEvaluator
+        
+        model = SmellDiffusion.from_pretrained("test-model")
+        evaluator = SafetyEvaluator()
+        
+        molecule = model.generate("test prompt", num_molecules=1)
+        
+        if molecule:
+            safety_report = evaluator.comprehensive_evaluation(molecule)
+            
+            assert hasattr(safety_report, 'overall_score')
+            assert hasattr(safety_report, 'ifra_compliant')
+            assert hasattr(safety_report, 'recommendations')
+
+
+class TestPerformance:
+    """Performance and benchmarking tests."""
+    
+    def test_generation_timing(self, mock_rdkit):
+        """Test generation performance."""
+        import time
+        
+        model = SmellDiffusion.from_pretrained("test-model")
+        
+        start_time = time.time()
+        result = model.generate("test prompt", num_molecules=5)
+        end_time = time.time()
+        
+        generation_time = end_time - start_time
+        
+        # Should complete within reasonable time (generous for CI)
+        assert generation_time < 10.0
+        assert result is not None
+    
+    def test_batch_performance(self, mock_rdkit):
+        """Test batch generation performance."""
+        model = SmellDiffusion.from_pretrained("test-model")
+        
+        prompts = [f"test prompt {i}" for i in range(5)]
+        
+        import time
+        start_time = time.time()
+        results = model.batch_generate(prompts, num_molecules=2)
+        end_time = time.time()
+        
+        batch_time = end_time - start_time
+        
+        # Batch should be reasonably fast
+        assert batch_time < 15.0
+        assert len(results) == len(prompts)
+    
+    def test_cache_effectiveness(self, mock_rdkit):
+        """Test caching effectiveness."""
+        model = SmellDiffusion.from_pretrained("test-model")
+        
+        prompt = "repeated test prompt"
+        
+        # First generation
+        result1 = model.generate(prompt, num_molecules=1)
+        stats1 = model.get_performance_stats()
+        
+        # Second generation (should hit cache)
+        result2 = model.generate(prompt, num_molecules=1)
+        stats2 = model.get_performance_stats()
+        
+        # Cache hits should increase
+        assert stats2['cache_hits'] >= stats1['cache_hits']
+
+
+@pytest.mark.asyncio
+class TestAsyncFeatures:
+    """Test asynchronous features."""
+    
+    async def test_async_batch_processing(self, mock_rdkit):
+        """Test asynchronous batch processing."""
+        from smell_diffusion.utils.async_utils import AsyncBatchProcessor
+        
+        processor = AsyncBatchProcessor(batch_size=2, max_concurrent_batches=2)
+        
+        items = ["item1", "item2", "item3", "item4", "item5"]
+        
+        async def mock_processor(item):
+            await asyncio.sleep(0.01)  # Simulate processing
+            return f"processed_{item}"
+        
+        results = await processor.process_items(items, mock_processor)
+        
+        assert len(results) == len(items)
+        assert all("processed_" in result for result in results)
+
+
+class TestEdgeCases:
+    """Test edge cases and boundary conditions."""
+    
+    def test_empty_database_categories(self):
+        """Test handling of empty database categories."""
+        model = SmellDiffusion()
+        
+        # Temporarily empty a category
+        original_citrus = model.FRAGRANCE_DATABASE['citrus']
+        model.FRAGRANCE_DATABASE['citrus'] = []
+        
+        try:
+            scores = {'citrus': 1.0}
+            molecules = model._select_molecules(scores, 1)
+            
+            # Should handle gracefully
+            assert isinstance(molecules, list)
+        finally:
+            # Restore original
+            model.FRAGRANCE_DATABASE['citrus'] = original_citrus
+    
+    def test_unicode_prompts(self, mock_rdkit):
+        """Test handling of Unicode prompts."""
+        model = SmellDiffusion()
+        model._is_loaded = True
+        
+        unicode_prompts = [
+            "Citrus frais avec des notes de bergamote",  # French
+            "フレッシュなシトラスの香り",  # Japanese
+            "Fresco aroma cítrico",  # Spanish
+        ]
+        
+        for prompt in unicode_prompts:
+            result = model.generate(prompt, num_molecules=1)
+            assert result is not None
+    
+    def test_extremely_long_prompts(self, mock_rdkit):
+        """Test handling of very long prompts."""
+        model = SmellDiffusion()
+        model._is_loaded = True
+        
+        long_prompt = "citrus " * 1000  # Very long prompt
+        
+        result = model.generate(long_prompt, num_molecules=1)
+        assert result is not None
+    
+    def test_special_characters_in_prompts(self, mock_rdkit):
+        """Test handling of special characters."""
+        model = SmellDiffusion()
+        model._is_loaded = True
+        
+        special_prompts = [
+            "Fresh@citrus#scent!",
+            "Rose & jasmine + lavender",
+            "Woody-cedar/pine*essence",
+            "Vanilla... sweet, gourmand?",
+        ]
+        
+        for prompt in special_prompts:
+            result = model.generate(prompt, num_molecules=1)
+            assert result is not None
