@@ -1,8 +1,14 @@
 """Multi-modal fragrance generation combining text, images, and reference molecules."""
 
 from typing import List, Optional, Dict, Any, Union
-import numpy as np
-from PIL import Image
+try:
+    import numpy as np
+except ImportError:
+    np = None
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
 from ..core.smell_diffusion import SmellDiffusion
 from ..core.molecule import Molecule
 
@@ -22,7 +28,7 @@ class MultiModalGenerator:
     
     def generate(self,
                  text: Optional[str] = None,
-                 image: Optional[Image.Image] = None,
+                 image: Optional[Any] = None,
                  reference_smiles: Optional[str] = None,
                  interpolation_weights: Optional[Dict[str, float]] = None,
                  num_molecules: int = 1,
@@ -76,7 +82,7 @@ class MultiModalGenerator:
         
         return final_molecules[:num_molecules]
     
-    def _process_image(self, image: Image.Image) -> Dict[str, Any]:
+    def _process_image(self, image: Any) -> Dict[str, Any]:
         """Extract features from image for fragrance generation."""
         # Convert to RGB if needed
         if image.mode != 'RGB':
@@ -216,7 +222,7 @@ class MultiModalGenerator:
     
     def rank_by_multimodal_similarity(self, molecules: List[Molecule],
                                     text: Optional[str] = None,
-                                    image: Optional[Image.Image] = None,
+                                    image: Optional[Any] = None,
                                     reference_smiles: Optional[str] = None) -> List[Molecule]:
         """Rank generated molecules by similarity to multimodal inputs."""
         if not molecules:
@@ -257,7 +263,7 @@ class MultiModalGenerator:
         matches = sum(1 for note in mol_notes if note in text_lower)
         return matches / max(len(mol_notes), 1)
     
-    def _calculate_image_similarity(self, molecule: Molecule, image: Image.Image) -> float:
+    def _calculate_image_similarity(self, molecule: Molecule, image: Any) -> float:
         """Calculate similarity between molecule and image."""
         image_influence = self._process_image(image)
         suggested_scents = image_influence.get('suggested_scents', [])
