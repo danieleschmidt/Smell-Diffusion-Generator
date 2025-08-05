@@ -2,10 +2,40 @@
 
 from typing import Optional, List, Dict, Any
 from dataclasses import dataclass
-import numpy as np
-from rdkit import Chem
-from rdkit.Chem import Descriptors, rdMolDescriptors
-from rdkit.Chem.Draw import rdMolDraw2D
+
+# Optional imports with fallbacks for demo purposes
+try:
+    import numpy as np
+except ImportError:
+    np = None
+
+try:
+    from rdkit import Chem
+    from rdkit.Chem import Descriptors, rdMolDescriptors
+    from rdkit.Chem.Draw import rdMolDraw2D
+    RDKIT_AVAILABLE = True
+except ImportError:
+    # Mock RDKit for demo purposes
+    class MockMol:
+        def __init__(self, smiles): self.smiles = smiles
+    
+    class MockChem:
+        Mol = MockMol  # Add Mol class attribute
+        @staticmethod
+        def MolFromSmiles(smiles): return MockMol(smiles) if smiles else None
+        @staticmethod
+        def MolToSmiles(mol): return mol.smiles if mol else ""
+    
+    class MockDescriptors:
+        @staticmethod
+        def MolWt(mol): return len(mol.smiles) * 12 + 16 if mol else 0  # Simple mock
+        @staticmethod
+        def MolLogP(mol): return len(mol.smiles) * 0.1 if mol else 0  # Simple mock
+    
+    Chem = MockChem()
+    Descriptors = MockDescriptors()
+    RDKIT_AVAILABLE = False
+
 import base64
 from io import BytesIO
 

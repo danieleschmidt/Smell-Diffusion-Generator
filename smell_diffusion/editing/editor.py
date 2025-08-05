@@ -1,7 +1,10 @@
 """Molecule editing and interpolation tools."""
 
 from typing import List, Optional, Dict, Any
-import numpy as np
+try:
+    import numpy as np
+except ImportError:
+    np = None
 from ..core.molecule import Molecule
 from ..core.smell_diffusion import SmellDiffusion
 

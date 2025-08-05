@@ -149,7 +149,7 @@ class SmellDiffusion:
             if sum(weights) == 0:
                 weights = [1.0] * len(weights)
                 
-            selected_category = np.random.choice(categories, p=weights)
+            selected_category = np.choice(categories, p=weights)
             
             # Select random molecule from category
             available_molecules = self.FRAGRANCE_DATABASE[selected_category]
