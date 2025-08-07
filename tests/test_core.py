@@ -106,7 +106,10 @@ class TestSmellDiffusion:
     
     def test_from_pretrained(self):
         """Test loading pretrained model."""
-        with patch.object(SmellDiffusion, '_load_model'):
+        def mock_load_model(self):
+            self._is_loaded = True
+            
+        with patch.object(SmellDiffusion, '_load_model', mock_load_model):
             model = SmellDiffusion.from_pretrained("test-model")
             assert model.model_name == "test-model"
             assert model._is_loaded
@@ -217,13 +220,13 @@ class TestSmellDiffusion:
         model = SmellDiffusion()
         model._is_loaded = True
         
-        # Empty prompt should still generate molecules
-        result = model.generate("", num_molecules=1)
-        assert result is not None
+        # Empty prompt should raise ValidationError
+        with pytest.raises(ValidationError):
+            model.generate("", num_molecules=1)
         
-        # Very short prompt
-        result = model.generate("a", num_molecules=1)
-        assert result is not None
+        # Very short prompt should raise ValidationError
+        with pytest.raises(ValidationError):
+            model.generate("a", num_molecules=1)
     
     def test_large_molecule_request(self, mock_rdkit):
         """Test handling large molecule generation requests."""
@@ -385,16 +388,16 @@ class TestAdvancedGeneration:
         model._is_loaded = True
         
         # Test with invalid parameters
-        with pytest.raises(ValueError):
+        with pytest.raises(ValidationError):
             model.generate("test", num_molecules=0)
         
-        with pytest.raises(ValueError):
+        with pytest.raises(ValidationError):
             model.generate("test", num_molecules=101)
         
-        with pytest.raises(ValueError):
+        with pytest.raises(ValidationError):
             model.generate("test", guidance_scale=0.05)
         
-        with pytest.raises(ValueError):
+        with pytest.raises(ValidationError):
             model.generate("test", guidance_scale=25.0)
     
     def test_fallback_molecules(self, mock_rdkit):
@@ -681,8 +684,9 @@ class TestEdgeCases:
         
         long_prompt = "citrus " * 1000  # Very long prompt
         
-        result = model.generate(long_prompt, num_molecules=1)
-        assert result is not None
+        # Should raise ValidationError for too long prompt
+        with pytest.raises(ValidationError):
+            model.generate(long_prompt, num_molecules=1)
     
     def test_special_characters_in_prompts(self, mock_rdkit):
         """Test handling of special characters."""

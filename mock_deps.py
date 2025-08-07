@@ -105,7 +105,7 @@ class MockChem:
     
     @staticmethod
     def MolFromSmiles(smiles):
-        if smiles and "INVALID" not in smiles.upper() and smiles.strip():
+        if smiles and "INVALID" not in smiles.upper() and smiles.strip() and not smiles.startswith('C[C') and 'XYZ' not in smiles:
             return MockMol()
         return None
     

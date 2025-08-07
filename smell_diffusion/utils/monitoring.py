@@ -4,9 +4,10 @@ import time
 import psutil
 import threading
 import asyncio
+import hashlib
 from typing import Dict, Any, List, Optional, Callable
 from dataclasses import dataclass, asdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from collections import defaultdict, deque
 import json
 from pathlib import Path
@@ -61,6 +62,256 @@ class HealthStatus:
     checks: Dict[str, bool]
     alerts: List[str]
     recommendations: List[str]
+    sla_compliance: float = 100.0
+    readiness: bool = True
+    liveness: bool = True
+
+
+@dataclass
+class Alert:
+    """Alert information for monitoring events."""
+    id: str
+    severity: str  # info, warning, critical, error
+    title: str
+    description: str
+    timestamp: float
+    source: str
+    tags: Dict[str, str]
+    resolved: bool = False
+    acknowledged: bool = False
+    
+    @classmethod
+    def create(cls, severity: str, title: str, description: str, source: str, **tags) -> 'Alert':
+        """Create a new alert with unique ID."""
+        alert_data = f"{title}{description}{source}{time.time()}"
+        alert_id = hashlib.md5(alert_data.encode()).hexdigest()[:8]
+        return cls(
+            id=alert_id,
+            severity=severity,
+            title=title,
+            description=description,
+            timestamp=time.time(),
+            source=source,
+            tags=tags
+        )
+
+
+@dataclass 
+class SLAMetrics:
+    """Service Level Agreement metrics."""
+    availability_percent: float
+    response_time_p95: float
+    response_time_p99: float
+    error_rate_percent: float
+    throughput_rps: float
+    mttr_seconds: float = 0.0
+    mttd_seconds: float = 0.0
+
+
+class AlertingSystem:
+    """Advanced alerting system with escalation policies."""
+    
+    def __init__(self):
+        """Initialize alerting system."""
+        self.active_alerts: Dict[str, Alert] = {}
+        self.alert_history: deque = deque(maxlen=1000)
+        self.escalation_policies = {
+            'critical': {'channels': ['email', 'slack'], 'escalate_after': 300},
+            'error': {'channels': ['email'], 'escalate_after': 900},
+            'warning': {'channels': ['slack'], 'escalate_after': 1800},
+            'info': {'channels': ['log'], 'escalate_after': None}
+        }
+        self.alert_suppression: Dict[str, float] = {}
+        self.notification_callbacks = {}
+        
+    def add_notification_callback(self, channel: str, callback: Callable[[Alert], bool]):
+        """Add notification callback for specific channel."""
+        self.notification_callbacks[channel] = callback
+    
+    def create_alert(self, severity: str, title: str, description: str, 
+                    source: str, suppress_duration: int = 300, **tags) -> Alert:
+        """Create and process a new alert."""
+        # Check for suppression
+        suppress_key = f"{title}:{source}"
+        current_time = time.time()
+        
+        if suppress_key in self.alert_suppression:
+            if current_time < self.alert_suppression[suppress_key]:
+                return None  # Alert suppressed
+        
+        # Create alert
+        alert = Alert.create(severity, title, description, source, **tags)
+        
+        # Add to active alerts
+        self.active_alerts[alert.id] = alert
+        self.alert_history.append(alert)
+        
+        # Set suppression
+        if suppress_duration > 0:
+            self.alert_suppression[suppress_key] = current_time + suppress_duration
+        
+        # Send notifications
+        self._send_notifications(alert)
+        
+        return alert
+    
+    def resolve_alert(self, alert_id: str, resolver: str = "system") -> bool:
+        """Resolve an active alert."""
+        if alert_id in self.active_alerts:
+            alert = self.active_alerts[alert_id]
+            alert.resolved = True
+            alert.tags['resolved_by'] = resolver
+            alert.tags['resolved_at'] = str(datetime.now(timezone.utc))
+            del self.active_alerts[alert_id]
+            return True
+        return False
+    
+    def acknowledge_alert(self, alert_id: str, acknowledger: str) -> bool:
+        """Acknowledge an active alert."""
+        if alert_id in self.active_alerts:
+            alert = self.active_alerts[alert_id]
+            alert.acknowledged = True
+            alert.tags['acknowledged_by'] = acknowledger
+            alert.tags['acknowledged_at'] = str(datetime.now(timezone.utc))
+            return True
+        return False
+    
+    def _send_notifications(self, alert: Alert):
+        """Send alert notifications through configured channels."""
+        policy = self.escalation_policies.get(alert.severity, {'channels': ['log']})
+        
+        for channel in policy.get('channels', []):
+            if channel in self.notification_callbacks:
+                try:
+                    self.notification_callbacks[channel](alert)
+                except Exception as e:
+                    logging.error(f"Failed to send alert to {channel}: {e}")
+    
+    def get_active_alerts(self, severity: Optional[str] = None) -> List[Alert]:
+        """Get currently active alerts, optionally filtered by severity."""
+        alerts = list(self.active_alerts.values())
+        if severity:
+            alerts = [a for a in alerts if a.severity == severity]
+        return sorted(alerts, key=lambda a: a.timestamp, reverse=True)
+    
+    def get_alert_statistics(self) -> Dict[str, Any]:
+        """Get alerting statistics."""
+        return {
+            'active_alerts': len(self.active_alerts),
+            'total_alerts_24h': len([a for a in self.alert_history 
+                                   if time.time() - a.timestamp < 86400]),
+            'alerts_by_severity': defaultdict(int),
+            'top_alert_sources': defaultdict(int),
+            'suppressed_alerts': len(self.alert_suppression)
+        }
+
+
+class PredictiveMonitoring:
+    """ML-based monitoring with anomaly detection."""
+    
+    def __init__(self, window_size: int = 100):
+        """Initialize predictive monitoring."""
+        self.metrics_history = deque(maxlen=window_size)
+        self.anomaly_threshold = 2.0  # Standard deviations
+        self.baseline_metrics = {}
+        
+    def add_metrics(self, metrics: Dict[str, float]):
+        """Add metrics sample for analysis."""
+        self.metrics_history.append({
+            'timestamp': time.time(),
+            'metrics': metrics.copy()
+        })
+        
+        # Update baseline
+        if len(self.metrics_history) >= 10:
+            self._update_baseline()
+    
+    def detect_anomalies(self) -> List[Dict[str, Any]]:
+        """Detect performance anomalies using statistical analysis."""
+        if len(self.metrics_history) < 10:
+            return []
+        
+        anomalies = []
+        latest = self.metrics_history[-1]['metrics']
+        
+        for metric_name, value in latest.items():
+            if metric_name in self.baseline_metrics:
+                baseline = self.baseline_metrics[metric_name]
+                z_score = abs((value - baseline['mean']) / max(baseline['std'], 0.001))
+                
+                if z_score > self.anomaly_threshold:
+                    anomalies.append({
+                        'metric': metric_name,
+                        'value': value,
+                        'expected': baseline['mean'],
+                        'z_score': z_score,
+                        'severity': 'critical' if z_score > 3.0 else 'warning'
+                    })
+        
+        return anomalies
+    
+    def _update_baseline(self):
+        """Update baseline statistics for anomaly detection."""
+        import statistics
+        
+        # Group metrics by name
+        metrics_by_name = defaultdict(list)
+        for sample in self.metrics_history:
+            for name, value in sample['metrics'].items():
+                metrics_by_name[name].append(value)
+        
+        # Calculate baseline statistics
+        for name, values in metrics_by_name.items():
+            if len(values) >= 3:
+                self.baseline_metrics[name] = {
+                    'mean': statistics.mean(values),
+                    'std': statistics.stdev(values) if len(values) > 1 else 0.0,
+                    'min': min(values),
+                    'max': max(values)
+                }
+    
+    def predict_capacity_needs(self) -> Dict[str, Any]:
+        """Predict future capacity requirements."""
+        if len(self.metrics_history) < 20:
+            return {'status': 'insufficient_data'}
+        
+        # Simple trend analysis
+        recent_samples = list(self.metrics_history)[-20:]
+        trends = {}
+        
+        for metric_name in ['cpu_percent', 'memory_percent', 'molecules_generated']:
+            values = [s['metrics'].get(metric_name, 0) for s in recent_samples]
+            if len(values) >= 2:
+                # Simple linear trend
+                x = list(range(len(values)))
+                if len(set(values)) > 1:  # Avoid division by zero
+                    slope = sum((x[i] - sum(x)/len(x)) * (values[i] - sum(values)/len(values)) 
+                               for i in range(len(x))) / sum((xi - sum(x)/len(x))**2 for xi in x)
+                    trends[metric_name] = {
+                        'slope': slope,
+                        'trend': 'increasing' if slope > 0.1 else 'decreasing' if slope < -0.1 else 'stable',
+                        'projected_1h': values[-1] + slope * 60,  # 60 minutes
+                        'projected_24h': values[-1] + slope * 1440  # 1440 minutes
+                    }
+        
+        return {
+            'status': 'analysis_complete',
+            'trends': trends,
+            'recommendations': self._generate_capacity_recommendations(trends)
+        }
+    
+    def _generate_capacity_recommendations(self, trends: Dict) -> List[str]:
+        """Generate capacity planning recommendations."""
+        recommendations = []
+        
+        for metric, trend_data in trends.items():
+            if trend_data['trend'] == 'increasing':
+                if metric == 'cpu_percent' and trend_data['projected_24h'] > 80:
+                    recommendations.append(f"Consider scaling up CPU resources - projected {trend_data['projected_24h']:.1f}% usage")
+                elif metric == 'memory_percent' and trend_data['projected_24h'] > 85:
+                    recommendations.append(f"Consider scaling up memory resources - projected {trend_data['projected_24h']:.1f}% usage")
+        
+        return recommendations
 
 
 class MetricsCollector:
