@@ -2,7 +2,11 @@
 
 import os
 import json
-import yaml
+try:
+    import yaml
+    YAML_AVAILABLE = True
+except ImportError:
+    YAML_AVAILABLE = False
 from pathlib import Path
 from typing import Dict, Any, Optional, Union
 from dataclasses import dataclass, asdict
@@ -147,9 +151,13 @@ class ConfigManager:
         if path.suffix.lower() == '.json':
             with open(path, 'w') as f:
                 json.dump(config_dict, f, indent=2)
-        else:  # Default to YAML
-            with open(path, 'w') as f:
-                yaml.dump(config_dict, f, default_flow_style=False, indent=2)
+        else:  # Default to YAML if available, otherwise JSON
+            if YAML_AVAILABLE:
+                with open(path, 'w') as f:
+                    yaml.dump(config_dict, f, default_flow_style=False, indent=2)
+            else:
+                with open(path, 'w') as f:
+                    json.dump(config_dict, f, indent=2)
         
         self.logger.logger.info(f"Configuration saved to {path}")
     
@@ -171,7 +179,11 @@ class ConfigManager:
                 if config_path.suffix.lower() == '.json':
                     return json.load(f)
                 else:  # YAML
-                    return yaml.safe_load(f) or {}
+                    if YAML_AVAILABLE:
+                        return yaml.safe_load(f) or {}
+                    else:
+                        # Fallback to JSON parsing for YAML extension
+                        return json.load(f)
         except Exception as e:
             self.logger.log_error("config_loading", e, {"path": str(config_path)})
             return {}

@@ -143,20 +143,22 @@ def test_config(temp_dir):
 @pytest.fixture
 def mock_rdkit():
     """Mock RDKit for testing without chemistry dependencies."""
-    with patch('smell_diffusion.core.molecule.Chem') as mock_chem:
+    with patch('smell_diffusion.core.molecule.Chem') as mock_chem, \
+         patch('smell_diffusion.core.molecule.Descriptors') as mock_desc:
         # Mock valid molecules
         mock_mol = Mock()
         mock_mol.GetNumAtoms.return_value = 20
         
         def mock_mol_from_smiles(smiles):
-            if smiles and 'INVALID' not in smiles.upper() and smiles != '':
+            if smiles and 'INVALID' not in smiles.upper() and smiles != '' and not smiles.startswith('C[C') and 'XYZ' not in smiles:
                 return mock_mol
             return None
         
         mock_chem.MolFromSmiles = mock_mol_from_smiles
         mock_chem.MolToSmiles.return_value = "CC(C)=CCCC(C)=CCO"
-        mock_chem.Descriptors.MolWt.return_value = 154.25
-        mock_chem.Descriptors.MolLogP.return_value = 2.3
+        
+        mock_desc.MolWt.return_value = 154.25
+        mock_desc.MolLogP.return_value = 2.3
         
         yield mock_chem
 
