@@ -1,0 +1,46 @@
+{
+  "generation": {
+    "generating": "جاري التوليد",
+    "complete": "اكتمل التوليد",
+    "failed": "فشل التوليد",
+    "molecules": "الجزيئات",
+    "fragrance": "العطر"
+  },
+  "safety": {
+    "evaluation": "تقييم السلامة",
+    "score": "نقاط السلامة",
+    "compliant": "متوافق مع المعايير",
+    "non_compliant": "غير متوافق مع المعايير",
+    "warnings": "تحذيرات",
+    "allergens": "المسببات للحساسية"
+  },
+  "notes": {
+    "top": "المقدمة",
+    "middle": "الوسط", 
+    "base": "القاعدة",
+    "intensity": "الكثافة",
+    "longevity": "الديمومة"
+  },
+  "compliance": {
+    "ifra": "الرابطة الدولية للعطور",
+    "reach": "تنظيم REACH الأوروبي",
+    "fda": "إدارة الغذاء والدواء الأمريكية",
+    "approved": "معتمد",
+    "restricted": "مقيد",
+    "prohibited": "محظور"
+  },
+  "errors": {
+    "invalid_prompt": "طلب غير صحيح",
+    "generation_failed": "فشل في التوليد",
+    "safety_check_failed": "فشل في فحص السلامة",
+    "molecule_invalid": "جزيء غير صحيح"
+  },
+  "research": {
+    "experimental_validation": "التحقق التجريبي",
+    "statistical_analysis": "التحليل الإحصائي",
+    "reproducibility": "إعادة الإنتاج",
+    "significance": "الأهمية",
+    "p_value": "قيمة p",
+    "confidence_interval": "فاصل الثقة"
+  }
+}

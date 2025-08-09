@@ -1,0 +1,46 @@
+{
+  "generation": {
+    "generating": "正在生成",
+    "complete": "生成完成",
+    "failed": "生成失败",
+    "molecules": "分子",
+    "fragrance": "香水"
+  },
+  "safety": {
+    "evaluation": "安全评估",
+    "score": "安全评分",
+    "compliant": "符合标准",
+    "non_compliant": "不符合标准",
+    "warnings": "警告",
+    "allergens": "过敏原"
+  },
+  "notes": {
+    "top": "前调",
+    "middle": "中调", 
+    "base": "后调",
+    "intensity": "强度",
+    "longevity": "持久性"
+  },
+  "compliance": {
+    "ifra": "国际香料协会",
+    "reach": "欧盟REACH法规",
+    "fda": "美国食品药品监督管理局",
+    "approved": "已批准",
+    "restricted": "受限制",
+    "prohibited": "禁止"
+  },
+  "errors": {
+    "invalid_prompt": "无效的提示",
+    "generation_failed": "生成失败",
+    "safety_check_failed": "安全检查失败",
+    "molecule_invalid": "分子无效"
+  },
+  "research": {
+    "experimental_validation": "实验验证",
+    "statistical_analysis": "统计分析",
+    "reproducibility": "可重现性",
+    "significance": "显著性",
+    "p_value": "p值",
+    "confidence_interval": "置信区间"
+  }
+}
