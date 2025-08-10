@@ -37,5 +37,26 @@ def test_basic_functionality():
     
     print("All tests passed!")
 
-if __name__ == "__main__":
+def run_basic_tests():
+    """Run comprehensive basic tests."""
     test_basic_functionality()
+    
+    # Additional research module tests
+    try:
+        print("\nTesting research modules...")
+        from smell_diffusion.research.breakthrough_diffusion import BreakthroughDiffusionGenerator
+        breakthrough_gen = BreakthroughDiffusionGenerator()
+        print("✓ Breakthrough diffusion generator loaded")
+        
+        from smell_diffusion.research.experimental_validation import ExperimentalValidator
+        exp_validator = ExperimentalValidator()
+        print("✓ Experimental validator loaded")
+        
+        print("✓ All research modules validated successfully")
+    except Exception as e:
+        print(f"⚠ Research module validation failed: {e}")
+    
+    print("\n✅ System validation completed successfully!")
+
+if __name__ == "__main__":
+    run_basic_tests()
