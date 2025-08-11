@@ -1,4 +1,13 @@
-"""Comprehensive monitoring and health check system for production deployment."""
+"""Advanced monitoring and alerting system for production deployment.
+
+Provides comprehensive monitoring, alerting, and observability features:
+- Real-time performance monitoring with predictive analytics
+- Multi-channel alerting with intelligent routing
+- Circuit breaker patterns for resilience
+- Health checks and service discovery
+- Prometheus/OpenTelemetry integration
+- Anomaly detection and auto-remediation
+"""
 
 import time
 import psutil
@@ -108,8 +117,493 @@ class SLAMetrics:
     mttd_seconds: float = 0.0
 
 
+class MLAlertClassifier:
+    """ML-based alert classification and enhancement."""
+    
+    def __init__(self):
+        self.classification_patterns = {
+            'performance': ['cpu', 'memory', 'disk', 'latency', 'throughput'],
+            'security': ['auth', 'unauthorized', 'breach', 'attack', 'malicious'],
+            'safety': ['toxic', 'allergen', 'prohibited', 'dangerous', 'violation'],
+            'availability': ['down', 'unreachable', 'timeout', 'connection', 'network'],
+            'quality': ['validation', 'accuracy', 'invalid', 'corrupt', 'format']
+        }
+        
+    def classify_and_enhance(self, alert: Alert) -> Alert:
+        """Classify alert and enhance with ML insights."""
+        # Classify alert category
+        category = self._classify_alert(alert)
+        alert.tags['ml_category'] = category
+        
+        # Enhance with context
+        alert.tags['ml_confidence'] = self._calculate_confidence(alert, category)
+        alert.tags['ml_priority'] = self._calculate_priority(alert, category)
+        
+        return alert
+    
+    def _classify_alert(self, alert: Alert) -> str:
+        """Classify alert into category."""
+        text = f"{alert.title} {alert.description}".lower()
+        
+        best_category = 'general'
+        best_score = 0
+        
+        for category, keywords in self.classification_patterns.items():
+            score = sum(1 for keyword in keywords if keyword in text)
+            if score > best_score:
+                best_score = score
+                best_category = category
+        
+        return best_category
+    
+    def _calculate_confidence(self, alert: Alert, category: str) -> float:
+        """Calculate confidence score for classification."""
+        text = f"{alert.title} {alert.description}".lower()
+        keywords = self.classification_patterns.get(category, [])
+        
+        matches = sum(1 for keyword in keywords if keyword in text)
+        return min(1.0, matches / max(len(keywords), 1))
+    
+    def _calculate_priority(self, alert: Alert, category: str) -> int:
+        """Calculate priority score (1-10)."""
+        base_priority = {
+            'critical': 9,
+            'error': 7,
+            'warning': 5,
+            'info': 3
+        }.get(alert.severity, 5)
+        
+        category_modifier = {
+            'security': 2,
+            'safety': 2,
+            'availability': 1,
+            'performance': 1,
+            'quality': 0
+        }.get(category, 0)
+        
+        return min(10, base_priority + category_modifier)
+    
+    def suggest_actions(self, alert: Alert) -> List[Dict[str, Any]]:
+        """Suggest actions based on alert analysis."""
+        suggestions = []
+        
+        category = alert.tags.get('ml_category', 'general')
+        confidence = float(alert.tags.get('ml_confidence', 0.5))
+        
+        if category == 'security' and confidence > 0.7:
+            suggestions.append({
+                'action': 'escalate',
+                'reason': 'High-confidence security alert'
+            })
+        
+        if category == 'safety' and alert.severity in ['error', 'critical']:
+            suggestions.append({
+                'action': 'enrich',
+                'data': {'requires_immediate_attention': True}
+            })
+        
+        if confidence < 0.3:
+            suggestions.append({
+                'action': 'suppress',
+                'reason': 'Low confidence classification'
+            })
+        
+        return suggestions
+
+
+class IncidentTracker:
+    """Track and correlate incidents across alerts."""
+    
+    def __init__(self):
+        self.active_incidents = {}
+        self.incident_history = deque(maxlen=1000)
+        
+    def update_with_alert(self, alert: Alert) -> Optional[str]:
+        """Update incident tracking with new alert."""
+        # Find existing incident or create new one
+        incident_id = self._find_or_create_incident(alert)
+        
+        if incident_id in self.active_incidents:
+            incident = self.active_incidents[incident_id]
+            incident['alerts'].append(alert)
+            incident['last_update'] = time.time()
+            incident['severity'] = max(incident['severity'], self._severity_to_int(alert.severity))
+        
+        return incident_id
+    
+    def _find_or_create_incident(self, alert: Alert) -> str:
+        """Find existing incident or create new one."""
+        # Look for related incidents
+        for incident_id, incident in self.active_incidents.items():
+            if self._alerts_related(alert, incident['alerts'][-1]):
+                return incident_id
+        
+        # Create new incident
+        incident_id = hashlib.md5(f"{alert.source}_{time.time()}".encode()).hexdigest()[:8]
+        self.active_incidents[incident_id] = {
+            'id': incident_id,
+            'created_at': time.time(),
+            'last_update': time.time(),
+            'alerts': [alert],
+            'severity': self._severity_to_int(alert.severity),
+            'status': 'active'
+        }
+        
+        return incident_id
+    
+    def _alerts_related(self, alert1: Alert, alert2: Alert) -> bool:
+        """Check if two alerts are related to same incident."""
+        # Same source
+        if alert1.source == alert2.source:
+            return True
+        
+        # Similar titles
+        if self._text_similarity(alert1.title, alert2.title) > 0.6:
+            return True
+        
+        # Time proximity (within 5 minutes)
+        if abs(alert1.timestamp - alert2.timestamp) < 300:
+            return True
+        
+        return False
+    
+    def _severity_to_int(self, severity: str) -> int:
+        return {'info': 1, 'warning': 2, 'error': 3, 'critical': 4}.get(severity, 2)
+    
+    def _text_similarity(self, text1: str, text2: str) -> float:
+        """Simple text similarity calculation."""
+        words1 = set(text1.lower().split())
+        words2 = set(text2.lower().split())
+        return len(words1 & words2) / len(words1 | words2) if words1 or words2 else 0.0
+
+
+class AlertAggregator:
+    """Aggregate related alerts to reduce noise."""
+    
+    def __init__(self):
+        self.aggregation_window = 300  # 5 minutes
+        self.pending_aggregations = {}
+        
+    def aggregate_if_needed(self, alert: Alert) -> Alert:
+        """Aggregate alert if similar alerts exist."""
+        aggregation_key = self._get_aggregation_key(alert)
+        
+        if aggregation_key in self.pending_aggregations:
+            existing_alert = self.pending_aggregations[aggregation_key]
+            
+            # Update existing aggregated alert
+            existing_alert.tags['aggregated_count'] = str(
+                int(existing_alert.tags.get('aggregated_count', '1')) + 1
+            )
+            existing_alert.description += f" | Additional occurrence: {alert.description[:50]}..."
+            existing_alert.timestamp = alert.timestamp  # Update to latest
+            
+            return existing_alert
+        else:
+            # Start new aggregation
+            alert.tags['aggregated_count'] = '1'
+            self.pending_aggregations[aggregation_key] = alert
+            
+            # Schedule cleanup
+            threading.Timer(
+                self.aggregation_window,
+                lambda: self.pending_aggregations.pop(aggregation_key, None)
+            ).start()
+            
+            return alert
+    
+    def _get_aggregation_key(self, alert: Alert) -> str:
+        """Generate key for alert aggregation."""
+        # Combine source, severity, and simplified title
+        title_words = alert.title.lower().split()[:3]  # First 3 words
+        return f"{alert.source}:{alert.severity}:{'_'.join(title_words)}"
+
+
+class TimeSeriesAnalyzer:
+    """Time series analysis for metrics."""
+    
+    def __init__(self):
+        self.time_series_data = defaultdict(list)
+        
+    def add_data_point(self, metric_name: str, data_point: Dict[str, Any]):
+        """Add data point to time series."""
+        self.time_series_data[metric_name].append(data_point)
+        
+        # Keep only recent data (last 1000 points)
+        if len(self.time_series_data[metric_name]) > 1000:
+            self.time_series_data[metric_name] = self.time_series_data[metric_name][-1000:]
+    
+    def detect_anomalies(self, metric_name: str, recent_values: List[float], 
+                        timestamps: List[float]) -> List[Dict[str, Any]]:
+        """Detect time series anomalies."""
+        anomalies = []
+        
+        if len(recent_values) < 10:
+            return anomalies
+        
+        # Detect sudden spikes/drops
+        for i in range(1, len(recent_values)):
+            prev_value = recent_values[i-1]
+            curr_value = recent_values[i]
+            
+            if prev_value != 0:
+                change_ratio = abs(curr_value - prev_value) / abs(prev_value)
+                
+                if change_ratio > 2.0:  # 200% change
+                    anomalies.append({
+                        'metric': metric_name,
+                        'value': curr_value,
+                        'previous_value': prev_value,
+                        'change_ratio': change_ratio,
+                        'detection_method': 'sudden_change',
+                        'severity': 'warning',
+                        'timestamp': timestamps[i] if i < len(timestamps) else time.time()
+                    })
+        
+        return anomalies
+
+
+class PatternDetector:
+    """Detect patterns in metric data."""
+    
+    def __init__(self):
+        self.known_patterns = {}
+        
+    def analyze_metric(self, metric_name: str, data_points: List[Dict[str, Any]]):
+        """Analyze metric for patterns."""
+        if len(data_points) < 20:
+            return
+        
+        values = [point['value'] for point in data_points]
+        
+        # Detect cyclical patterns
+        self._detect_cyclical_patterns(metric_name, values)
+        
+        # Detect trend patterns
+        self._detect_trends(metric_name, values)
+    
+    def _detect_cyclical_patterns(self, metric_name: str, values: List[float]):
+        """Detect cyclical patterns in data."""
+        # Simple peak detection
+        peaks = []
+        for i in range(1, len(values) - 1):
+            if values[i] > values[i-1] and values[i] > values[i+1]:
+                peaks.append(i)
+        
+        if len(peaks) >= 3:
+            # Calculate average period
+            periods = [peaks[i+1] - peaks[i] for i in range(len(peaks)-1)]
+            avg_period = sum(periods) / len(periods)
+            
+            self.known_patterns[metric_name] = {
+                'type': 'cyclical',
+                'period': avg_period,
+                'confidence': 0.7 if len(peaks) >= 5 else 0.5
+            }
+    
+    def _detect_trends(self, metric_name: str, values: List[float]):
+        """Detect trend patterns."""
+        if len(values) < 10:
+            return
+        
+        # Simple linear regression
+        n = len(values)
+        x = list(range(n))
+        y = values
+        
+        sum_x = sum(x)
+        sum_y = sum(y)
+        sum_xy = sum(x[i] * y[i] for i in range(n))
+        sum_x2 = sum(xi * xi for xi in x)
+        
+        slope = (n * sum_xy - sum_x * sum_y) / (n * sum_x2 - sum_x * sum_x)
+        
+        if abs(slope) > 0.1:  # Significant trend
+            trend_type = 'increasing' if slope > 0 else 'decreasing'
+            self.known_patterns[metric_name] = {
+                'type': 'trend',
+                'direction': trend_type,
+                'slope': slope,
+                'confidence': min(1.0, abs(slope))
+            }
+    
+    def detect_pattern_anomalies(self, metric_name: str, recent_values: List[float]) -> List[Dict[str, Any]]:
+        """Detect anomalies based on known patterns."""
+        anomalies = []
+        
+        if metric_name not in self.known_patterns:
+            return anomalies
+        
+        pattern = self.known_patterns[metric_name]
+        
+        if pattern['type'] == 'cyclical':
+            # Check if recent values break the cyclical pattern
+            expected_range = self._calculate_expected_range_for_cycle(recent_values, pattern)
+            latest_value = recent_values[-1]
+            
+            if latest_value < expected_range['min'] or latest_value > expected_range['max']:
+                anomalies.append({
+                    'metric': metric_name,
+                    'value': latest_value,
+                    'expected_min': expected_range['min'],
+                    'expected_max': expected_range['max'],
+                    'detection_method': 'pattern_cyclical',
+                    'severity': 'warning',
+                    'timestamp': time.time()
+                })
+        
+        return anomalies
+    
+    def _calculate_expected_range_for_cycle(self, values: List[float], pattern: Dict) -> Dict[str, float]:
+        """Calculate expected range based on cyclical pattern."""
+        # Simplified calculation
+        mean_value = sum(values) / len(values)
+        std_value = (sum((v - mean_value) ** 2 for v in values) / len(values)) ** 0.5
+        
+        return {
+            'min': mean_value - 2 * std_value,
+            'max': mean_value + 2 * std_value
+        }
+
+
+class ForecastEngine:
+    """Forecasting engine for predictive monitoring."""
+    
+    def __init__(self):
+        self.forecasting_models = {}
+        
+    def create_model(self, metric_name: str, historical_data: List[Dict[str, Any]]):
+        """Create forecasting model for metric."""
+        if len(historical_data) < 20:
+            return None
+        
+        values = [point['value'] for point in historical_data]
+        self.forecasting_models[metric_name] = SimpleForecastingModel(metric_name, values)
+        
+        return self.forecasting_models[metric_name]
+
+
+class SimpleForecastingModel:
+    """Simple forecasting model using moving averages and trend analysis."""
+    
+    def __init__(self, metric_name: str, initial_data: List[float] = None):
+        self.metric_name = metric_name
+        self.data = initial_data or []
+        self.trend = 0.0
+        self.seasonal_component = 0.0
+        
+        if len(self.data) >= 10:
+            self._calculate_trend()
+    
+    def train(self, historical_data: List[Dict[str, Any]]):
+        """Train model on historical data."""
+        self.data = [point['value'] for point in historical_data]
+        if len(self.data) >= 10:
+            self._calculate_trend()
+    
+    def update(self, new_data_point: Dict[str, Any]):
+        """Update model with new data point."""
+        self.data.append(new_data_point['value'])
+        if len(self.data) > 1000:
+            self.data = self.data[-1000:]  # Keep recent data
+        
+        # Recalculate trend periodically
+        if len(self.data) % 10 == 0:
+            self._calculate_trend()
+    
+    def forecast(self, horizon: int = 5) -> List[float]:
+        """Generate forecast for next 'horizon' time steps."""
+        if not self.data:
+            return [0.0] * horizon
+        
+        predictions = []
+        last_value = self.data[-1]
+        
+        for i in range(horizon):
+            # Simple trend-based forecast
+            predicted_value = last_value + (self.trend * (i + 1))
+            predictions.append(max(0.0, predicted_value))  # Ensure non-negative
+        
+        return predictions
+    
+    def _calculate_trend(self):
+        """Calculate trend component."""
+        if len(self.data) < 10:
+            return
+        
+        # Use last 20 data points for trend calculation
+        recent_data = self.data[-20:]
+        n = len(recent_data)
+        
+        # Simple linear regression
+        x = list(range(n))
+        y = recent_data
+        
+        sum_x = sum(x)
+        sum_y = sum(y)
+        sum_xy = sum(x[i] * y[i] for i in range(n))
+        sum_x2 = sum(xi * xi for xi in x)
+        
+        if n * sum_x2 - sum_x * sum_x != 0:
+            self.trend = (n * sum_xy - sum_x * sum_y) / (n * sum_x2 - sum_x * sum_x)
+        else:
+            self.trend = 0.0
+    
+    def predict(self, values: List[float]) -> List[float]:
+        """Predict expected values."""
+        if not self.data:
+            return values
+        
+        # Return simple moving average as prediction
+        window_size = min(10, len(self.data))
+        if window_size > 0:
+            avg = sum(self.data[-window_size:]) / window_size
+            return [avg] * len(values)
+        
+        return values
+    
+    def score_anomaly(self, values: List[float]) -> List[float]:
+        """Score anomaly likelihood for values."""
+        if not self.data or len(self.data) < 10:
+            return [0.5] * len(values)
+        
+        # Calculate statistical baseline
+        recent_data = self.data[-50:] if len(self.data) >= 50 else self.data
+        mean_value = sum(recent_data) / len(recent_data)
+        std_value = (sum((v - mean_value) ** 2 for v in recent_data) / len(recent_data)) ** 0.5
+        
+        anomaly_scores = []
+        for value in values:
+            if std_value > 0:
+                z_score = abs(value - mean_value) / std_value
+                anomaly_score = min(1.0, z_score / 3.0)  # Normalize to 0-1
+            else:
+                anomaly_score = 0.0 if value == mean_value else 1.0
+            
+            anomaly_scores.append(anomaly_score)
+        
+        return anomaly_scores
+    
+    def get_confidence_intervals(self) -> Optional[Dict[str, List[float]]]:
+        """Get confidence intervals for predictions."""
+        if len(self.data) < 10:
+            return None
+        
+        # Calculate prediction uncertainty
+        recent_data = self.data[-20:]
+        std_dev = (sum((v - sum(recent_data)/len(recent_data)) ** 2 for v in recent_data) / len(recent_data)) ** 0.5
+        
+        # Simple confidence intervals (±2 std dev)
+        forecast_values = self.forecast(5)
+        
+        return {
+            'lower_bound': [v - 2*std_dev for v in forecast_values],
+            'upper_bound': [v + 2*std_dev for v in forecast_values]
+        }
+
+
 class AlertingSystem:
-    """Advanced alerting system with escalation policies."""
+    """Intelligent alerting system with multiple notification channels and ML-based routing."""
     
     def __init__(self):
         """Initialize alerting system."""

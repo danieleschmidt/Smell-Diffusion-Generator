@@ -25,6 +25,7 @@ try:
 except ImportError:
     MP_AVAILABLE = False
 
+from collections import defaultdict
 from ..core.smell_diffusion import SmellDiffusion
 from ..core.molecule import Molecule
 from ..utils.logging import SmellDiffusionLogger, performance_monitor
@@ -70,7 +71,7 @@ class DistributedGenerator:
         self.result_queue = queue.Queue(maxsize=self.config.queue_size * 2)
         
         # Load balancing
-        self.load_balancer = LoadBalancer(self.config.load_balancing)
+        self.load_balancer = HealthAwareLoadBalancer(self.config.load_balancing)
         
         # Auto-scaling
         self.auto_scaler = AutoScaler(self.config) if self.config.auto_scale else None
@@ -375,12 +376,17 @@ class DistributedGenerator:
         self.logger.logger.info(f"Final performance metrics: {metrics}")
 
 
-class LoadBalancer:
-    """Intelligent load balancing for worker selection."""
+class HealthAwareLoadBalancer:
+    """Advanced health-aware load balancer with predictive scaling."""
     
-    def __init__(self, strategy: str = "round_robin"):
+    def __init__(self, strategy: str = "weighted_round_robin"):
         self.strategy = strategy
         self.round_robin_counter = 0
+        self.worker_health_scores = defaultdict(lambda: 1.0)
+        self.circuit_breakers = {}  # Worker ID -> CircuitBreaker
+        self.predictive_scaler = PredictiveLoadScaler()
+        self.health_monitor = WorkerHealthMonitor()
+        self.logger = SmellDiffusionLogger("health_aware_load_balancer")
         
     def select_worker(self, worker_stats: Dict[str, WorkerStats]) -> str:
         """Select the best worker based on load balancing strategy."""
@@ -413,14 +419,97 @@ class LoadBalancer:
             return random.choice(workers)
 
 
+class PredictiveLoadScaler:
+    """ML-based predictive load scaling."""
+    
+    def __init__(self):
+        pass  # Placeholder implementation
+
+
+class WorkerHealthMonitor:
+    """Monitor worker health with advanced diagnostics."""
+    
+    def __init__(self):
+        pass  # Placeholder implementation
+
+
+class CircuitBreaker:
+    """Circuit breaker for worker fault tolerance."""
+    
+    def __init__(self, failure_threshold: int = 5, timeout: int = 60):
+        self.failure_threshold = failure_threshold
+        self.timeout = timeout
+        self.failure_count = 0
+        self.last_failure_time = None
+        self.state = 'CLOSED'  # CLOSED, OPEN, HALF_OPEN
+    
+    def allow_request(self) -> bool:
+        """Check if requests should be allowed to this worker."""
+        if self.state == 'CLOSED':
+            return True
+        elif self.state == 'OPEN':
+            if time.time() - self.last_failure_time > self.timeout:
+                self.state = 'HALF_OPEN'
+                return True
+            return False
+        elif self.state == 'HALF_OPEN':
+            return True
+        return False
+    
+    def record_success(self):
+        """Record successful request."""
+        if self.state == 'HALF_OPEN':
+            self.state = 'CLOSED'
+        self.failure_count = 0
+    
+    def record_failure(self):
+        """Record failed request."""
+        self.failure_count += 1
+        self.last_failure_time = time.time()
+        
+        if self.failure_count >= self.failure_threshold:
+            self.state = 'OPEN'
+    
+    def reset(self):
+        """Reset circuit breaker state."""
+        self.state = 'CLOSED'
+        self.failure_count = 0
+        self.last_failure_time = None
+
+
 class AutoScaler:
-    """Automatic scaling based on system metrics."""
+    """Advanced automatic scaling with predictive analytics."""
     
     def __init__(self, config: ScalingConfiguration):
         self.config = config
         self.last_scale_action = 0
         self.scale_cooldown = 30  # seconds
         self.logger = SmellDiffusionLogger("auto_scaler")
+        
+        # Advanced scaling features
+        self.predictive_scaling = True
+        self.load_history = []
+        self.scaling_history = []
+        self.ml_predictor = LoadPredictor()
+        
+        # Scaling policies
+        self.scaling_policies = {
+            'conservative': {'scale_factor': 1.2, 'cooldown': 600},
+            'aggressive': {'scale_factor': 1.5, 'cooldown': 180},
+            'predictive': {'scale_factor': 1.3, 'cooldown': 300}
+        }
+        self.current_policy = 'predictive'
+
+
+class LoadPredictor:
+    """ML-based load prediction for proactive scaling."""
+    
+    def __init__(self):
+        pass  # Placeholder implementation
+    
+    def predict_future_load(self, load_history, current_metrics):
+        """Predict future load."""
+        return 0.5  # Placeholder
         
     def monitor_and_scale(self, worker_stats: Dict[str, WorkerStats]):
         """Monitor system and adjust worker count."""

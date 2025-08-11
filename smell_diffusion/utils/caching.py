@@ -5,10 +5,11 @@ import pickle
 import time
 import functools
 from pathlib import Path
-from typing import Any, Dict, Optional, Callable, Tuple
+from typing import Any, Dict, Optional, Callable, Tuple, List
 import threading
 import json
 from datetime import datetime, timedelta
+from collections import defaultdict, deque
 
 from .logging import SmellDiffusionLogger, performance_monitor
 from .config import get_config

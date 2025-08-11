@@ -1,8 +1,11 @@
 """Input validation and error handling utilities."""
 
 import re
+import time
 from typing import Any, Dict, List, Optional, Union, Callable
 from functools import wraps
+from collections import defaultdict
+from dataclasses import dataclass
 
 # Optional imports with fallbacks
 try:
@@ -35,7 +38,18 @@ except ImportError:
 
 class ValidationError(Exception):
     """Custom exception for validation errors."""
-    pass
+    def __init__(self, message: str, field: str = None, value: Any = None):
+        super().__init__(message)
+        self.field = field
+        self.value = value
+        self.timestamp = time.time()
+
+
+class SecurityValidationError(ValidationError):
+    """Security-specific validation error."""
+    def __init__(self, message: str, threat_level: str = "medium", **kwargs):
+        super().__init__(message, **kwargs)
+        self.threat_level = threat_level
 
 
 class SMILESValidator:
@@ -222,14 +236,156 @@ class ParameterValidator:
             )
 
 
+# Enhanced security and rate limiting validators
+
+class SecurityValidator:
+    """Advanced security validation for all inputs."""
+    
+    SUSPICIOUS_PATTERNS = [
+        r'\b(eval|exec|import|open|file)\s*\(',
+        r'[<>{}\[\]`\\]',
+        r'\b(script|javascript|vbscript)\b',
+        r'\$\{.*\}',  # Template injection
+        r'\b(system|shell|cmd)\b',
+        r'\b(SELECT|INSERT|UPDATE|DELETE|DROP)\b',  # SQL injection
+    ]
+    
+    @staticmethod
+    def validate_inputs(args: tuple, kwargs: dict) -> None:
+        """Comprehensive security validation of all inputs."""
+        
+        # Check all string inputs for suspicious patterns
+        all_strings = []
+        
+        # Extract strings from args
+        for arg in args:
+            if isinstance(arg, str):
+                all_strings.append(arg)
+        
+        # Extract strings from kwargs
+        for value in kwargs.values():
+            if isinstance(value, str):
+                all_strings.append(value)
+            elif isinstance(value, dict):
+                for nested_val in value.values():
+                    if isinstance(nested_val, str):
+                        all_strings.append(nested_val)
+        
+        # Security pattern detection
+        for input_str in all_strings:
+            for pattern in SecurityValidator.SUSPICIOUS_PATTERNS:
+                if re.search(pattern, input_str, re.IGNORECASE):
+                    raise SecurityValidationError(
+                        f"Suspicious pattern detected: {pattern[:20]}...",
+                        threat_level="high"
+                    )
+        
+        # Length-based attacks
+        for input_str in all_strings:
+            if len(input_str) > 10000:
+                raise SecurityValidationError(
+                    "Input string too long - possible DoS attack",
+                    threat_level="medium"
+                )
+
+
+class RateLimitValidator:
+    """Rate limiting validator to prevent abuse."""
+    
+    _call_history = defaultdict(list)
+    _max_calls_per_minute = 100
+    _max_calls_per_hour = 1000
+    
+    @classmethod
+    def check_rate_limit(cls, function_name: str) -> None:
+        """Check if function call exceeds rate limits."""
+        
+        current_time = time.time()
+        call_times = cls._call_history[function_name]
+        
+        # Remove old entries (older than 1 hour)
+        call_times[:] = [t for t in call_times if current_time - t < 3600]
+        
+        # Check hourly limit
+        if len(call_times) >= cls._max_calls_per_hour:
+            raise SecurityValidationError(
+                f"Rate limit exceeded for {function_name}: {cls._max_calls_per_hour}/hour",
+                threat_level="high"
+            )
+        
+        # Check per-minute limit
+        recent_calls = [t for t in call_times if current_time - t < 60]
+        if len(recent_calls) >= cls._max_calls_per_minute:
+            raise SecurityValidationError(
+                f"Rate limit exceeded for {function_name}: {cls._max_calls_per_minute}/minute",
+                threat_level="medium"
+            )
+        
+        # Add current call
+        call_times.append(current_time)
+
+
+def _validate_function_inputs(func: Callable, args: tuple, kwargs: dict) -> None:
+    """Validate function inputs comprehensively."""
+    
+    # Basic type validation
+    if hasattr(func, '__annotations__'):
+        annotations = func.__annotations__
+        
+        # Check args against annotations (simplified)
+        param_names = list(func.__code__.co_varnames[:func.__code__.co_argcount])
+        
+        for i, arg in enumerate(args[1:], 1):  # Skip 'self'
+            if i < len(param_names):
+                param_name = param_names[i]
+                expected_type = annotations.get(param_name)
+                
+                if expected_type and not isinstance(arg, expected_type):
+                    raise ValidationError(
+                        f"Argument {param_name} expected {expected_type.__name__}, got {type(arg).__name__}",
+                        field=param_name,
+                        value=arg
+                    )
+
+
+def _validate_function_outputs(func: Callable, result: Any) -> None:
+    """Validate function outputs for safety."""
+    
+    # Check output type consistency
+    if hasattr(func, '__annotations__') and 'return' in func.__annotations__:
+        expected_return_type = func.__annotations__['return']
+        
+        # Handle Union types and Optional
+        if hasattr(expected_return_type, '__origin__'):
+            if expected_return_type.__origin__ is Union:
+                valid_types = expected_return_type.__args__
+                if not any(isinstance(result, t) for t in valid_types if t is not type(None)):
+                    raise ValidationError(
+                        f"Function {func.__name__} returned unexpected type: {type(result)}"
+                    )
+        elif not isinstance(result, expected_return_type):
+            raise ValidationError(
+                f"Function {func.__name__} returned {type(result)}, expected {expected_return_type}"
+            )
+
+
 def validate_inputs(func: Callable) -> Callable:
-    """Decorator to validate inputs to generation functions."""
+    """Decorator to validate inputs to generation functions with enhanced security."""
     @wraps(func)
     def wrapper(*args, **kwargs):
         # Get function name for error context
         func_name = func.__name__
         
         try:
+            # Comprehensive input validation
+            _validate_function_inputs(func, args, kwargs)
+            
+            # Security validation
+            SecurityValidator.validate_inputs(args, kwargs)
+            
+            # Rate limiting check
+            RateLimitValidator.check_rate_limit(func.__name__)
+            
             # Validate prompt if present
             if 'prompt' in kwargs and kwargs['prompt'] is not None:
                 TextPromptValidator.validate_prompt(kwargs['prompt'])
@@ -252,10 +408,18 @@ def validate_inputs(func: Callable) -> Callable:
             if 'interpolation_weights' in kwargs and kwargs['interpolation_weights'] is not None:
                 ParameterValidator.validate_interpolation_weights(kwargs['interpolation_weights'])
             
-            return func(*args, **kwargs)
+            # Execute function
+            result = func(*args, **kwargs)
             
-        except ValidationError as e:
-            raise ValidationError(f"Validation error in {func_name}: {str(e)}")
+            # Output validation
+            _validate_function_outputs(func, result)
+            
+            return result
+            
+        except ValidationError:
+            raise
+        except SecurityValidationError:
+            raise
         except Exception as e:
             raise ValidationError(f"Unexpected validation error in {func_name}: {str(e)}")
     
