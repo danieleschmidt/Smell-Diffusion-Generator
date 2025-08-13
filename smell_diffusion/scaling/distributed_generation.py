@@ -32,6 +32,24 @@ from ..utils.logging import SmellDiffusionLogger, performance_monitor
 from ..utils.caching import cached
 
 
+class LoadBalancer:
+    """Simple load balancer for distributed generation."""
+    
+    def __init__(self):
+        self.workers = []
+        self.current_worker = 0
+    
+    def add_worker(self, worker):
+        self.workers.append(worker)
+    
+    def get_next_worker(self):
+        if not self.workers:
+            return None
+        worker = self.workers[self.current_worker]
+        self.current_worker = (self.current_worker + 1) % len(self.workers)
+        return worker
+
+
 @dataclass
 class ScalingConfiguration:
     """Configuration for scalable generation."""

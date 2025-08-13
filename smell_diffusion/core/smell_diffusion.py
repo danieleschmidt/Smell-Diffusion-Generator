@@ -321,7 +321,7 @@ class SmellDiffusion:
                  num_molecules: int = 1,
                  guidance_scale: float = 7.5,
                  safety_filter: bool = True,
-                 **kwargs) -> Union[Molecule, List[Molecule]]:
+                 **kwargs):
         """Generate fragrance molecules from text prompt with comprehensive error handling."""
         
         with self._error_handling_context("generation", 
@@ -723,7 +723,7 @@ class SmellDiffusion:
         else:
             return base_batch_size
     
-    async def async_generate(self, prompt: str, **kwargs) -> Union[Molecule, List[Molecule]]:
+    async def async_generate(self, prompt: str, **kwargs):
         """Asynchronous molecule generation for high-throughput scenarios."""
         # Run synchronous generation in thread pool
         import concurrent.futures
