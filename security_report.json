@@ -56,6 +56,30 @@
       },
       {
         "type": "long_function",
+        "file": "./smell_diffusion/compliance/global_compliance.py",
+        "line": 88,
+        "description": "Function '_initialize_regulatory_standards' is too long (104 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/compliance/global_compliance.py",
+        "line": 318,
+        "description": "Function '_assess_regional_compliance' is too long (67 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/compliance/global_compliance.py",
+        "line": 472,
+        "description": "Function '_generate_labeling_requirements' is too long (51 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/compliance/global_compliance.py",
+        "line": 740,
+        "description": "Function '_generate_compliance_recommendations' is too long (53 lines)"
+      },
+      {
+        "type": "long_function",
         "file": "./smell_diffusion/core/molecule.py",
         "line": 115,
         "description": "Function '_predict_fragrance_notes' is too long (57 lines)"
@@ -104,9 +128,171 @@
       },
       {
         "type": "long_function",
+        "file": "./smell_diffusion/optimization/self_learning.py",
+        "line": 501,
+        "description": "Function 'optimize_generation' is too long (83 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/academic_benchmarking.py",
+        "line": 193,
+        "description": "Function 'run_comprehensive_benchmark' is too long (66 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/academic_benchmarking.py",
+        "line": 259,
+        "description": "Function '_execute_benchmark_run' is too long (64 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/academic_benchmarking.py",
+        "line": 323,
+        "description": "Function '_evaluate_against_criteria' is too long (95 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/academic_benchmarking.py",
+        "line": 682,
+        "description": "Function '_aggregate_benchmark_runs' is too long (68 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/academic_benchmarking.py",
+        "line": 770,
+        "description": "Function '_perform_comparative_analysis' is too long (57 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/breakthrough_diffusion.py",
+        "line": 278,
+        "description": "Function 'generate_with_research_validation' is too long (79 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/experimental_validation.py",
+        "line": 148,
+        "description": "Function '_run_experimental_group' is too long (69 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/experimental_validation.py",
+        "line": 382,
+        "description": "Function '_perform_t_test' is too long (69 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/experimental_validation.py",
+        "line": 556,
+        "description": "Function 'run_benchmark_suite' is too long (57 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/quantum_molecular_generation.py",
+        "line": 416,
+        "description": "Function 'optimize_molecular_configuration' is too long (75 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/quantum_molecular_generation.py",
+        "line": 565,
+        "description": "Function 'generate_quantum_molecules' is too long (71 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/research_orchestrator.py",
+        "line": 87,
+        "description": "Function '__init__' is too long (166 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/research_orchestrator.py",
+        "line": 369,
+        "description": "Function '_define_research_quality_gates' is too long (220 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/research_orchestrator.py",
+        "line": 616,
+        "description": "Function '_calculate_metric' is too long (55 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/research_orchestrator.py",
+        "line": 791,
+        "description": "Function '_generate_algorithm_performance_profile' is too long (56 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/research_orchestrator.py",
+        "line": 888,
+        "description": "Function '_evaluate_quality_gate' is too long (58 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/research_orchestrator.py",
+        "line": 1111,
+        "description": "Function '_perform_pairwise_comparison' is too long (56 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/research_orchestrator.py",
+        "line": 1609,
+        "description": "Function '_create_significance_table' is too long (120 lines)"
+      },
+      {
+        "type": "long_function",
         "file": "./smell_diffusion/safety/evaluator.py",
         "line": 64,
         "description": "Function 'comprehensive_evaluation' is too long (140 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/scaling/concurrent_processor.py",
+        "line": 168,
+        "description": "Function '_execute_task' is too long (63 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/scaling/concurrent_processor.py",
+        "line": 404,
+        "description": "Function 'process_batch' is too long (90 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/scaling/distributed_generation.py",
+        "line": 115,
+        "description": "Function '_start_monitoring' is too long (116 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/scaling/distributed_generation.py",
+        "line": 231,
+        "description": "Function 'process_single_request' is too long (108 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/security/security_scanner.py",
+        "line": 79,
+        "description": "Function '_load_vulnerability_patterns' is too long (103 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/security/security_scanner.py",
+        "line": 208,
+        "description": "Function 'scan_code' is too long (86 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/security/security_scanner.py",
+        "line": 314,
+        "description": "Function '_scan_python_file' is too long (67 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/security/security_scanner.py",
+        "line": 451,
+        "description": "Function '_scan_requirements_file' is too long (64 lines)"
       },
       {
         "type": "long_function",
@@ -135,104 +321,68 @@
       {
         "type": "long_function",
         "file": "./smell_diffusion/utils/monitoring.py",
-        "line": 333,
+        "line": 827,
         "description": "Function 'get_system_metrics' is too long (56 lines)"
       },
       {
         "type": "long_function",
         "file": "./smell_diffusion/utils/monitoring.py",
-        "line": 389,
+        "line": 883,
         "description": "Function 'get_application_metrics' is too long (53 lines)"
       },
       {
         "type": "print_statement",
         "file": "./smell_diffusion/utils/monitoring.py",
-        "line": 820,
+        "line": 1314,
         "description": "Use logging instead of print statements"
       },
       {
         "type": "print_statement",
         "file": "./smell_diffusion/utils/monitoring.py",
-        "line": 826,
+        "line": 1320,
         "description": "Use logging instead of print statements"
       },
       {
         "type": "print_statement",
         "file": "./smell_diffusion/utils/monitoring.py",
-        "line": 831,
+        "line": 1325,
         "description": "Use logging instead of print statements"
       },
       {
         "type": "print_statement",
         "file": "./smell_diffusion/utils/monitoring.py",
-        "line": 833,
+        "line": 1327,
         "description": "Use logging instead of print statements"
       },
       {
         "type": "print_statement",
         "file": "./smell_diffusion/utils/monitoring.py",
-        "line": 835,
+        "line": 1329,
         "description": "Use logging instead of print statements"
       },
       {
         "type": "print_statement",
         "file": "./smell_diffusion/utils/monitoring.py",
-        "line": 837,
+        "line": 1331,
         "description": "Use logging instead of print statements"
       },
       {
         "type": "print_statement",
         "file": "./smell_diffusion/utils/monitoring.py",
-        "line": 839,
+        "line": 1333,
         "description": "Use logging instead of print statements"
       },
       {
         "type": "print_statement",
         "file": "./smell_diffusion/utils/monitoring.py",
-        "line": 844,
+        "line": 1338,
         "description": "Use logging instead of print statements"
       },
       {
         "type": "long_function",
-        "file": "./smell_diffusion/research/experimental_validation.py",
-        "line": 148,
-        "description": "Function '_run_experimental_group' is too long (69 lines)"
-      },
-      {
-        "type": "long_function",
-        "file": "./smell_diffusion/research/experimental_validation.py",
-        "line": 382,
-        "description": "Function '_perform_t_test' is too long (69 lines)"
-      },
-      {
-        "type": "long_function",
-        "file": "./smell_diffusion/research/experimental_validation.py",
-        "line": 556,
-        "description": "Function 'run_benchmark_suite' is too long (57 lines)"
-      },
-      {
-        "type": "long_function",
-        "file": "./smell_diffusion/research/breakthrough_diffusion.py",
-        "line": 278,
-        "description": "Function 'generate_with_research_validation' is too long (79 lines)"
-      },
-      {
-        "type": "long_function",
-        "file": "./smell_diffusion/scaling/distributed_generation.py",
-        "line": 114,
-        "description": "Function '_start_monitoring' is too long (116 lines)"
-      },
-      {
-        "type": "long_function",
-        "file": "./smell_diffusion/scaling/distributed_generation.py",
-        "line": 230,
-        "description": "Function 'process_single_request' is too long (108 lines)"
-      },
-      {
-        "type": "long_function",
-        "file": "./smell_diffusion/optimization/self_learning.py",
-        "line": 501,
-        "description": "Function 'optimize_generation' is too long (83 lines)"
+        "file": "./smell_diffusion/utils/validation.py",
+        "line": 374,
+        "description": "Function 'wrapper' is too long (54 lines)"
       }
     ]
   },
