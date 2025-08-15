@@ -261,13 +261,13 @@
       {
         "type": "long_function",
         "file": "./smell_diffusion/scaling/distributed_generation.py",
-        "line": 115,
+        "line": 133,
         "description": "Function '_start_monitoring' is too long (116 lines)"
       },
       {
         "type": "long_function",
         "file": "./smell_diffusion/scaling/distributed_generation.py",
-        "line": 231,
+        "line": 249,
         "description": "Function 'process_single_request' is too long (108 lines)"
       },
       {
