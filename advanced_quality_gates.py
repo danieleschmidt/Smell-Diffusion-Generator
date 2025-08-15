@@ -190,7 +190,7 @@ class AdvancedQualityGates:
             assert config.max_workers == 2, "Configuration not set correctly"
             
             # Test load balancer
-            load_balancer = LoadBalancer(strategy="round_robin")
+            load_balancer = LoadBalancer()
             
             # Test distributed generator creation
             dist_gen = create_distributed_generator(max_workers=2, worker_type="thread")

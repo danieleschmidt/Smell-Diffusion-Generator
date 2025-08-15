@@ -505,6 +505,31 @@ class AutoScaler:
         self.logger = SmellDiffusionLogger("auto_scaler")
         
         # Advanced scaling features
+    
+    def monitor_and_scale(self, current_workers: int, load_metrics: Dict[str, float]) -> int:
+        """Monitor system load and recommend scaling actions."""
+        current_time = time.time()
+        
+        # Check cooldown period
+        if current_time - self.last_scale_action < self.scale_cooldown:
+            return current_workers
+        
+        avg_cpu_usage = load_metrics.get('cpu_usage', 0.0)
+        queue_length = load_metrics.get('queue_length', 0)
+        
+        # Scale up conditions
+        if avg_cpu_usage > self.config.scale_threshold and current_workers < self.config.max_workers_limit:
+            self.last_scale_action = current_time
+            self.logger.logger.info(f"Scaling up: CPU usage {avg_cpu_usage:.2f} > threshold {self.config.scale_threshold}")
+            return min(current_workers + 1, self.config.max_workers_limit)
+        
+        # Scale down conditions
+        elif avg_cpu_usage < 0.3 and current_workers > self.config.min_workers:
+            self.last_scale_action = current_time
+            self.logger.logger.info(f"Scaling down: CPU usage {avg_cpu_usage:.2f} < 0.3")
+            return max(current_workers - 1, self.config.min_workers)
+        
+        return current_workers
         self.predictive_scaling = True
         self.load_history = []
         self.scaling_history = []
