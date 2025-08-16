@@ -145,11 +145,34 @@ class DistributedGenerator:
         # Auto-scaling thread
         if self.auto_scaler:
             scaling_thread = threading.Thread(
-                target=self.auto_scaler.monitor_and_scale,
-                args=(self.worker_stats,),
+                target=self._run_monitor_and_scale,
                 daemon=True
             )
             scaling_thread.start()
+    
+    def _run_monitor_and_scale(self):
+        """Wrapper for monitor_and_scale to handle arguments properly."""
+        try:
+            # Pass the correct arguments based on the method signature
+            if hasattr(self.auto_scaler, 'monitor_and_scale'):
+                # Check if it's the new monitor_and_scale that takes worker_stats
+                import inspect
+                sig = inspect.signature(self.auto_scaler.monitor_and_scale)
+                params = list(sig.parameters.keys())
+                
+                if 'worker_stats' in params:
+                    self.auto_scaler.monitor_and_scale(self.worker_stats)
+                elif 'load_metrics' in params:
+                    # Convert worker_stats to load_metrics format
+                    load_metrics = {
+                        'cpu_usage': 50.0,  # Default values
+                        'queue_length': 0,
+                        'active_workers': len(self.worker_stats)
+                    }
+                    result = self.auto_scaler.monitor_and_scale(len(self.worker_stats), load_metrics)
+                    self.logger.logger.info(f"Auto-scaler recommended {result} workers")
+        except Exception as e:
+            self.logger.log_error("auto_scaling_thread", e)
     
     @performance_monitor("distributed_generation")
     async def generate_distributed(self, 

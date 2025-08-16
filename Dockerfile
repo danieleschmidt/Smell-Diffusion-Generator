@@ -41,9 +41,28 @@ RUN mkdir -p /home/appuser/.smell_diffusion/cache
 # Expose port for API
 EXPOSE 8000
 
-# Health check
+# Health check with enhanced validation
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD python -c "import smell_diffusion; print('OK')" || exit 1
+    CMD python -c "
+import sys
+sys.path.insert(0, '/app')
+from smell_diffusion import SmellDiffusion
+from smell_diffusion.utils.health_monitoring import global_health_monitor
+model = SmellDiffusion()
+health = global_health_monitor.get_health_summary()
+mol = model.generate('health check', num_molecules=1)
+assert mol.is_valid
+print('Health check passed')
+" || exit 1
 
-# Default command
-CMD ["python", "-m", "smell_diffusion.api.server"]
+# Default command with optimizations
+CMD ["python", "-c", "
+import sys
+sys.path.insert(0, '/app')
+from smell_diffusion.api.server import app
+from smell_diffusion.utils.performance_optimizer import global_performance_optimizer
+global_performance_optimizer.enable_optimizations()
+print('🚀 Starting optimized Smell Diffusion API server...')
+import uvicorn
+uvicorn.run(app, host='0.0.0.0', port=8000, workers=1)
+"]
