@@ -12,6 +12,13 @@ services:
       - SMELL_DIFFUSION_SAFETY_FILTER=true
       - SMELL_DIFFUSION_MIN_SAFETY_SCORE=70.0
       - SMELL_DIFFUSION_DEVICE=auto
+      - SMELL_DIFFUSION_ENV=production
+      - SMELL_DIFFUSION_ENABLE_OPTIMIZATION=true
+      - SMELL_DIFFUSION_CACHE_SIZE=1000
+      - SMELL_DIFFUSION_RATE_LIMIT=500
+      - SMELL_DIFFUSION_API_KEY=${SMELL_DIFFUSION_API_KEY:-demo-api-key-12345}
+      - SMELL_DIFFUSION_ENABLE_MONITORING=true
+      - SMELL_DIFFUSION_HEALTH_CHECK_INTERVAL=30
     volumes:
       - cache_data:/home/appuser/.smell_diffusion/cache
       - log_data:/app/logs

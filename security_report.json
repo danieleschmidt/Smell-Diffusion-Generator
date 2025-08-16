@@ -87,31 +87,31 @@
       {
         "type": "long_function",
         "file": "./smell_diffusion/core/smell_diffusion.py",
-        "line": 318,
+        "line": 331,
         "description": "Function 'generate' is too long (212 lines)"
       },
       {
         "type": "long_function",
         "file": "./smell_diffusion/core/smell_diffusion.py",
-        "line": 613,
-        "description": "Function 'generate_with_cache_key' is too long (96 lines)"
+        "line": 659,
+        "description": "Function 'generate_with_cache_key' is too long (118 lines)"
       },
       {
         "type": "long_function",
         "file": "./smell_diffusion/core/smell_diffusion.py",
-        "line": 822,
+        "line": 932,
         "description": "Function 'get_scaling_recommendations' is too long (51 lines)"
       },
       {
         "type": "print_statement",
         "file": "./smell_diffusion/core/smell_diffusion.py",
-        "line": 197,
+        "line": 207,
         "description": "Use logging instead of print statements"
       },
       {
         "type": "print_statement",
         "file": "./smell_diffusion/core/smell_diffusion.py",
-        "line": 217,
+        "line": 227,
         "description": "Use logging instead of print statements"
       },
       {
@@ -261,13 +261,13 @@
       {
         "type": "long_function",
         "file": "./smell_diffusion/scaling/distributed_generation.py",
-        "line": 133,
-        "description": "Function '_start_monitoring' is too long (116 lines)"
+        "line": 152,
+        "description": "Function '_run_monitor_and_scale' is too long (120 lines)"
       },
       {
         "type": "long_function",
         "file": "./smell_diffusion/scaling/distributed_generation.py",
-        "line": 249,
+        "line": 272,
         "description": "Function 'process_single_request' is too long (108 lines)"
       },
       {
@@ -383,6 +383,24 @@
         "file": "./smell_diffusion/utils/validation.py",
         "line": 374,
         "description": "Function 'wrapper' is too long (54 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/utils/health_monitoring.py",
+        "line": 358,
+        "description": "Function 'record_metric' is too long (122 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/utils/error_recovery.py",
+        "line": 291,
+        "description": "Function 'execute_with_recovery' is too long (51 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/utils/performance_optimizer.py",
+        "line": 238,
+        "description": "Function '__init__' is too long (70 lines)"
       }
     ]
   },

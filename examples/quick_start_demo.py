@@ -6,6 +6,10 @@ This demo shows the basic functionality of generating fragrance molecules
 from text descriptions with safety evaluation.
 """
 
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from smell_diffusion import SmellDiffusion, SafetyEvaluator
 
 

@@ -42,6 +42,9 @@ from ..utils.validation import validate_inputs, ValidationError
 from ..utils.caching import cached
 from ..utils.async_utils import AsyncMoleculeGenerator
 from ..utils.config import get_config
+from ..utils.error_recovery import global_error_recovery, with_error_recovery, RetryConfig, CircuitBreakerConfig
+from ..utils.health_monitoring import global_health_monitor, monitor_performance
+from ..utils.performance_optimizer import global_performance_optimizer, optimize_performance, profile_performance
 
 
 class SmellDiffusion:
@@ -120,6 +123,13 @@ class SmellDiffusion:
             # Graceful degradation if monitoring not available
             self.alerting_system = None
             self.predictive_monitoring = None
+        
+        # Initialize health monitoring
+        global_health_monitor.record_metric("models.initialized", 1, tags={'model': model_name})
+        
+        # Initialize performance optimizations
+        global_performance_optimizer.enable_optimizations()
+        self.logger.logger.info("Performance optimizations enabled for model")
         
         # Validate model name
         if not isinstance(model_name, str) or not model_name.strip():
@@ -316,6 +326,9 @@ class SmellDiffusion:
     @validate_inputs
     @performance_monitor("molecule_generation")
     @log_molecule_generation
+    @monitor_performance("core.molecule_generation")
+    @with_error_recovery("molecule_generation")
+    @optimize_performance(cache_ttl=1800, profile=True, memory_optimize=True)
     def generate(self, 
                  prompt: str,
                  num_molecules: int = 1,
@@ -585,6 +598,7 @@ class SmellDiffusion:
         else:
             self._performance_stats["avg_generation_time"] = generation_time
     
+    @optimize_performance(cache_ttl=600, profile=True)
     def batch_generate(self, prompts: List[str], **kwargs) -> List[List[Molecule]]:
         """Generate molecules for multiple prompts with optimized batching."""
         from ..utils.async_utils import AsyncBatchProcessor, TaskPriority
@@ -593,6 +607,38 @@ class SmellDiffusion:
         total_prompts = len(prompts)
         
         try:
+            # Use advanced performance optimization
+            if global_performance_optimizer.optimization_enabled:
+                # Delegate to optimized batch processor
+                async def optimized_batch():
+                    def single_generate(prompt):
+                        return self.generate(prompt=prompt, **kwargs)
+                    
+                    return await global_performance_optimizer.optimize_batch_processing(
+                        prompts, single_generate
+                    )
+                
+                import asyncio
+                try:
+                    loop = asyncio.get_event_loop()
+                    if loop.is_running():
+                        # Create new loop in thread
+                        import concurrent.futures
+                        with concurrent.futures.ThreadPoolExecutor() as executor:
+                            future = executor.submit(asyncio.run, optimized_batch())
+                            results = future.result()
+                    else:
+                        results = loop.run_until_complete(optimized_batch())
+                    
+                    # Convert single molecules to lists for consistency
+                    return [[mol] if not isinstance(mol, list) else mol for mol in results]
+                
+                except Exception as e:
+                    self.logger.log_error("optimized_batch_processing", e)
+                    # Fall back to original implementation
+                    pass
+            
+            # Original implementation as fallback
             # Optimized batch processing configuration
             optimal_batch_size = min(
                 kwargs.get('batch_size', self._calculate_optimal_batch_size(prompts)),
@@ -640,10 +686,26 @@ class SmellDiffusion:
                 asyncio.set_event_loop(loop)
             
             try:
-                # Process in optimized batches
-                results = loop.run_until_complete(
-                    batch_processor.process_items(prompts, generate_with_cache_key)
-                )
+                # Check if loop is closed and create new one if needed
+                if loop.is_closed():
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                
+                # Process in optimized batches with proper async handling
+                if loop.is_running():
+                    # If loop is already running, create task instead
+                    import concurrent.futures
+                    with concurrent.futures.ThreadPoolExecutor() as executor:
+                        async def async_wrapper():
+                            return await batch_processor.process_items(prompts, generate_with_cache_key)
+                        
+                        future = executor.submit(asyncio.run, async_wrapper())
+                        results = future.result()
+                else:
+                    # Run in new loop
+                    results = loop.run_until_complete(
+                        batch_processor.process_items(prompts, generate_with_cache_key)
+                    )
                 
                 # Log batch performance metrics
                 batch_time = time.time() - batch_start_time
@@ -664,12 +726,18 @@ class SmellDiffusion:
                 
                 return results
                 
+            except Exception as async_error:
+                # Enhanced error handling for async issues
+                self.logger.log_error("async_batch_processing", async_error)
+                raise async_error
+                
             finally:
-                # Don't close event loop if it was already running
-                if loop.is_running():
-                    pass
-                else:
-                    loop.close()
+                # Improved loop cleanup
+                try:
+                    if not loop.is_running() and not loop.is_closed():
+                        loop.close()
+                except Exception:
+                    pass  # Ignore cleanup errors
                 
         except Exception as e:
             batch_time = time.time() - batch_start_time
@@ -775,6 +843,9 @@ class SmellDiffusion:
     
     def optimize_for_throughput(self) -> None:
         """Optimize model for high-throughput scenarios."""
+        # Enable advanced performance optimizations
+        global_performance_optimizer.enable_optimizations()
+        
         # Pre-warm cache with common patterns
         common_prompts = [
             "fresh citrus", "floral rose", "woody cedar", 
@@ -790,15 +861,54 @@ class SmellDiffusion:
         # Pre-compile regex patterns for faster validation
         self._precompile_patterns()
         
-        # Initialize thread pool for async operations
-        if not hasattr(self, '_thread_pool'):
-            import concurrent.futures
-            self._thread_pool = concurrent.futures.ThreadPoolExecutor(
-                max_workers=min(4, os.cpu_count() or 2),
-                thread_name_prefix='smell_diffusion_'
-            )
+        # Initialize optimized resource pools
+        thread_pool = global_performance_optimizer.resource_pool.get_thread_pool()
+        self.logger.logger.info(f"Initialized thread pool with {thread_pool._max_workers} workers")
         
-        self.logger.logger.info("Model optimized for high-throughput processing")
+        # Pre-warm adaptive cache
+        global_performance_optimizer.cache_manager.put("model_optimized", True)
+        
+        self.logger.logger.info("Model optimized for high-throughput processing with advanced optimizations")
+        
+        # Start periodic optimization if not already running
+        if not hasattr(self, '_optimization_thread'):
+            self._start_periodic_optimization()
+    
+    def _start_periodic_optimization(self):
+        """Start periodic optimization in background thread."""
+        import threading
+        
+        def optimization_loop():
+            while getattr(self, '_optimization_enabled', True):
+                try:
+                    # Run periodic optimizations
+                    global_performance_optimizer.periodic_optimization()
+                    
+                    # Update performance stats
+                    self._update_performance_stats(time.time())
+                    
+                    # Sleep for 60 seconds between optimization cycles
+                    time.sleep(60)
+                    
+                except Exception as e:
+                    self.logger.log_error("periodic_optimization", e)
+                    time.sleep(120)  # Wait longer on error
+        
+        self._optimization_enabled = True
+        self._optimization_thread = threading.Thread(
+            target=optimization_loop,
+            daemon=True,
+            name="smell_diffusion_optimizer"
+        )
+        self._optimization_thread.start()
+        self.logger.logger.info("Started periodic optimization thread")
+    
+    def stop_optimization(self):
+        """Stop periodic optimization."""
+        self._optimization_enabled = False
+        if hasattr(self, '_optimization_thread'):
+            self._optimization_thread.join(timeout=5.0)
+        self.logger.logger.info("Stopped periodic optimization")
     
     def enable_auto_scaling(self, target_throughput: float = 5.0):
         """Enable automatic scaling based on throughput metrics."""
