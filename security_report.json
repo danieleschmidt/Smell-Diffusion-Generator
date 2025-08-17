@@ -314,75 +314,9 @@
       },
       {
         "type": "long_function",
-        "file": "./smell_diffusion/utils/i18n.py",
-        "line": 267,
-        "description": "Function 'check_regional_compliance' is too long (54 lines)"
-      },
-      {
-        "type": "long_function",
-        "file": "./smell_diffusion/utils/monitoring.py",
-        "line": 827,
-        "description": "Function 'get_system_metrics' is too long (56 lines)"
-      },
-      {
-        "type": "long_function",
-        "file": "./smell_diffusion/utils/monitoring.py",
-        "line": 883,
-        "description": "Function 'get_application_metrics' is too long (53 lines)"
-      },
-      {
-        "type": "print_statement",
-        "file": "./smell_diffusion/utils/monitoring.py",
-        "line": 1314,
-        "description": "Use logging instead of print statements"
-      },
-      {
-        "type": "print_statement",
-        "file": "./smell_diffusion/utils/monitoring.py",
-        "line": 1320,
-        "description": "Use logging instead of print statements"
-      },
-      {
-        "type": "print_statement",
-        "file": "./smell_diffusion/utils/monitoring.py",
-        "line": 1325,
-        "description": "Use logging instead of print statements"
-      },
-      {
-        "type": "print_statement",
-        "file": "./smell_diffusion/utils/monitoring.py",
-        "line": 1327,
-        "description": "Use logging instead of print statements"
-      },
-      {
-        "type": "print_statement",
-        "file": "./smell_diffusion/utils/monitoring.py",
-        "line": 1329,
-        "description": "Use logging instead of print statements"
-      },
-      {
-        "type": "print_statement",
-        "file": "./smell_diffusion/utils/monitoring.py",
-        "line": 1331,
-        "description": "Use logging instead of print statements"
-      },
-      {
-        "type": "print_statement",
-        "file": "./smell_diffusion/utils/monitoring.py",
-        "line": 1333,
-        "description": "Use logging instead of print statements"
-      },
-      {
-        "type": "print_statement",
-        "file": "./smell_diffusion/utils/monitoring.py",
-        "line": 1338,
-        "description": "Use logging instead of print statements"
-      },
-      {
-        "type": "long_function",
-        "file": "./smell_diffusion/utils/validation.py",
-        "line": 374,
-        "description": "Function 'wrapper' is too long (54 lines)"
+        "file": "./smell_diffusion/utils/error_recovery.py",
+        "line": 291,
+        "description": "Function 'execute_with_recovery' is too long (51 lines)"
       },
       {
         "type": "long_function",
@@ -392,15 +326,81 @@
       },
       {
         "type": "long_function",
-        "file": "./smell_diffusion/utils/error_recovery.py",
-        "line": 291,
-        "description": "Function 'execute_with_recovery' is too long (51 lines)"
+        "file": "./smell_diffusion/utils/i18n.py",
+        "line": 267,
+        "description": "Function 'check_regional_compliance' is too long (54 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/utils/monitoring.py",
+        "line": 880,
+        "description": "Function 'get_system_metrics' is too long (56 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/utils/monitoring.py",
+        "line": 936,
+        "description": "Function 'get_application_metrics' is too long (53 lines)"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/utils/monitoring.py",
+        "line": 1367,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/utils/monitoring.py",
+        "line": 1373,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/utils/monitoring.py",
+        "line": 1378,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/utils/monitoring.py",
+        "line": 1380,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/utils/monitoring.py",
+        "line": 1382,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/utils/monitoring.py",
+        "line": 1384,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/utils/monitoring.py",
+        "line": 1386,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/utils/monitoring.py",
+        "line": 1391,
+        "description": "Use logging instead of print statements"
       },
       {
         "type": "long_function",
         "file": "./smell_diffusion/utils/performance_optimizer.py",
         "line": 238,
         "description": "Function '__init__' is too long (70 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/utils/validation.py",
+        "line": 374,
+        "description": "Function 'wrapper' is too long (54 lines)"
       }
     ]
   },
