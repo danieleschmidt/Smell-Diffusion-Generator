@@ -171,32 +171,164 @@
       {
         "type": "long_function",
         "file": "./smell_diffusion/research/experimental_validation.py",
-        "line": 148,
-        "description": "Function '_run_experimental_group' is too long (69 lines)"
+        "line": 71,
+        "description": "Function 'validate_hypothesis_test' is too long (61 lines)"
       },
       {
         "type": "long_function",
         "file": "./smell_diffusion/research/experimental_validation.py",
-        "line": 382,
-        "description": "Function '_perform_t_test' is too long (69 lines)"
+        "line": 398,
+        "description": "Function '_perform_comparative_analysis' is too long (79 lines)"
       },
       {
         "type": "long_function",
         "file": "./smell_diffusion/research/experimental_validation.py",
-        "line": 556,
-        "description": "Function 'run_benchmark_suite' is too long (57 lines)"
+        "line": 603,
+        "description": "Function 'generate_validation_report' is too long (54 lines)"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/experimental_validation.py",
+        "line": 694,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/experimental_validation.py",
+        "line": 698,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/experimental_validation.py",
+        "line": 699,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/experimental_validation.py",
+        "line": 700,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/experimental_validation.py",
+        "line": 701,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/experimental_validation.py",
+        "line": 702,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/experimental_validation.py",
+        "line": 704,
+        "description": "Use logging instead of print statements"
       },
       {
         "type": "long_function",
         "file": "./smell_diffusion/research/quantum_molecular_generation.py",
-        "line": 416,
-        "description": "Function 'optimize_molecular_configuration' is too long (75 lines)"
+        "line": 397,
+        "description": "Function 'energy_function' is too long (62 lines)"
       },
       {
         "type": "long_function",
         "file": "./smell_diffusion/research/quantum_molecular_generation.py",
-        "line": 565,
-        "description": "Function 'generate_quantum_molecules' is too long (71 lines)"
+        "line": 491,
+        "description": "Function 'generate_molecules' is too long (58 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/quantum_molecular_generation.py",
+        "line": 592,
+        "description": "Function 'benchmark_quantum_advantage' is too long (54 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/quantum_molecular_generation.py",
+        "line": 670,
+        "description": "Function 'run_quantum_molecular_generation_experiment' is too long (76 lines)"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/quantum_molecular_generation.py",
+        "line": 802,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/quantum_molecular_generation.py",
+        "line": 803,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/quantum_molecular_generation.py",
+        "line": 804,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/quantum_molecular_generation.py",
+        "line": 805,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/quantum_molecular_generation.py",
+        "line": 806,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/quantum_molecular_generation.py",
+        "line": 807,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/quantum_molecular_generation.py",
+        "line": 808,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/quantum_molecular_generation.py",
+        "line": 811,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/quantum_molecular_generation.py",
+        "line": 812,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/quantum_molecular_generation.py",
+        "line": 813,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/quantum_molecular_generation.py",
+        "line": 814,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/quantum_molecular_generation.py",
+        "line": 815,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/quantum_molecular_generation.py",
+        "line": 817,
+        "description": "Use logging instead of print statements"
       },
       {
         "type": "long_function",
@@ -239,6 +371,144 @@
         "file": "./smell_diffusion/research/research_orchestrator.py",
         "line": 1609,
         "description": "Function '_create_significance_table' is too long (120 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/uncertainty_quantification.py",
+        "line": 121,
+        "description": "Function 'forward' is too long (88 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/uncertainty_quantification.py",
+        "line": 379,
+        "description": "Function 'generate_with_uncertainty' is too long (60 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/uncertainty_quantification.py",
+        "line": 470,
+        "description": "Function 'evaluate_uncertainty_quality' is too long (51 lines)"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/uncertainty_quantification.py",
+        "line": 674,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/uncertainty_quantification.py",
+        "line": 675,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/uncertainty_quantification.py",
+        "line": 676,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/uncertainty_quantification.py",
+        "line": 677,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/uncertainty_quantification.py",
+        "line": 678,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/uncertainty_quantification.py",
+        "line": 680,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/uncertainty_quantification.py",
+        "line": 681,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/uncertainty_quantification.py",
+        "line": 682,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/uncertainty_quantification.py",
+        "line": 683,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/uncertainty_quantification.py",
+        "line": 685,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/contrastive_multimodal.py",
+        "line": 302,
+        "description": "Function 'process_molecular_data' is too long (89 lines)"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/contrastive_multimodal.py",
+        "line": 517,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/sustainable_molecular_design.py",
+        "line": 214,
+        "description": "Function 'evaluate_molecule' is too long (63 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/sustainable_molecular_design.py",
+        "line": 491,
+        "description": "Function 'generate_sustainable_molecules' is too long (96 lines)"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/sustainable_molecular_design.py",
+        "line": 729,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/sustainable_molecular_design.py",
+        "line": 730,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/sustainable_molecular_design.py",
+        "line": 731,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/sustainable_molecular_design.py",
+        "line": 732,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/sustainable_molecular_design.py",
+        "line": 734,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/sustainable_molecular_design.py",
+        "line": 736,
+        "description": "Use logging instead of print statements"
       },
       {
         "type": "long_function",

@@ -1,11 +1,11 @@
 """
-Self-Learning Molecular Optimization System
+Self-Learning Optimization Framework
 
-Advanced AI-driven optimization that learns from generation patterns:
-- Reinforcement learning for molecular design
-- Evolutionary algorithms for structure optimization
-- Adaptive prompt understanding
-- Self-improving generation quality
+Implementation of adaptive algorithms that learn from usage patterns,
+optimize performance automatically, and evolve based on feedback.
+
+Research Objective: Create autonomous systems that improve performance by 25-40%
+through continuous learning and adaptation without human intervention.
 """
 
 import time
