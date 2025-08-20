@@ -212,11 +212,16 @@ def test_configuration():
             print(f"   ✓ Configuration loaded: {loaded_config.model.model_name}")
             
             # Test environment variables
-            with os.environ.copy() if hasattr(os.environ, 'copy') else {}:
+            original_env = os.environ.get('SMELL_DIFFUSION_MODEL_NAME')
+            try:
                 os.environ['SMELL_DIFFUSION_MODEL_NAME'] = 'env-test-model'
                 env_config = manager.load_config()
-                # Note: This might not work in this simple test
                 print("   ✓ Environment variable handling tested")
+            finally:
+                if original_env is not None:
+                    os.environ['SMELL_DIFFUSION_MODEL_NAME'] = original_env
+                else:
+                    os.environ.pop('SMELL_DIFFUSION_MODEL_NAME', None)
         
         return True
         

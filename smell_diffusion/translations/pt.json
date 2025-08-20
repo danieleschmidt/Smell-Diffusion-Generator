@@ -1,0 +1,47 @@
+{
+  "safety": {
+    "report": {
+      "title": "Relatório de Avaliação de Segurança",
+      "overall_score": "Pontuação Geral de Segurança: {score}/100",
+      "ifra_compliant": "Conforme IFRA",
+      "ifra_non_compliant": "Não Conforme IFRA",
+      "recommendations": "Recomendações de Segurança"
+    },
+    "warnings": {
+      "high_molecular_weight": "Alto peso molecular pode reduzir volatilidade",
+      "skin_sensitizer": "Potencial sensibilizador de pele - use com cuidado",
+      "eye_irritant": "Pode causar irritação ocular",
+      "respiratory_irritant": "Pode causar irritação respiratória",
+      "environmental_concern": "Impacto ambiental requer avaliação"
+    }
+  },
+  "fragrance_notes": {
+    "bergamot": "Bergamota",
+    "lemon": "Limão",
+    "rose": "Rosa",
+    "jasmine": "Jasmim",
+    "vanilla": "Baunilha",
+    "sandalwood": "Sândalo",
+    "patchouli": "Patchouli",
+    "amber": "Âmbar",
+    "cedar": "Cedro",
+    "musk": "Almíscar",
+    "lavender": "Lavanda",
+    "citrus": "Cítrico",
+    "floral": "Floral",
+    "woody": "Amadeirado",
+    "oriental": "Oriental",
+    "fresh": "Fresco",
+    "aquatic": "Aquático",
+    "spicy": "Picante",
+    "fruity": "Frutado",
+    "green": "Verde"
+  },
+  "cli": {
+    "generate": {
+      "success": "Gerado {count} moléculas com sucesso",
+      "error": "Erro ao gerar moléculas: {error}",
+      "no_molecules": "Nenhuma molécula gerada"
+    }
+  }
+}

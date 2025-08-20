@@ -1,8 +1,15 @@
 {
   "security": {
-    "passed": 4,
-    "failed": 0,
-    "issues": []
+    "passed": 3,
+    "failed": 1,
+    "issues": [
+      {
+        "type": "potential_secret",
+        "file": "./.venv/lib/python3.12/site-packages/fontTools/ttLib/tables/ttProgram.py",
+        "line": 201,
+        "description": "Potential hardcoded secret detected"
+      }
+    ]
   },
   "quality": {
     "passed": 0,
@@ -167,6 +174,18 @@
         "file": "./smell_diffusion/research/breakthrough_diffusion.py",
         "line": 278,
         "description": "Function 'generate_with_research_validation' is too long (79 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/contrastive_multimodal.py",
+        "line": 302,
+        "description": "Function 'process_molecular_data' is too long (89 lines)"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/contrastive_multimodal.py",
+        "line": 517,
+        "description": "Use logging instead of print statements"
       },
       {
         "type": "long_function",
@@ -374,6 +393,54 @@
       },
       {
         "type": "long_function",
+        "file": "./smell_diffusion/research/sustainable_molecular_design.py",
+        "line": 214,
+        "description": "Function 'evaluate_molecule' is too long (63 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/sustainable_molecular_design.py",
+        "line": 491,
+        "description": "Function 'generate_sustainable_molecules' is too long (96 lines)"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/sustainable_molecular_design.py",
+        "line": 729,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/sustainable_molecular_design.py",
+        "line": 730,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/sustainable_molecular_design.py",
+        "line": 731,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/sustainable_molecular_design.py",
+        "line": 732,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/sustainable_molecular_design.py",
+        "line": 734,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/sustainable_molecular_design.py",
+        "line": 736,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "long_function",
         "file": "./smell_diffusion/research/uncertainty_quantification.py",
         "line": 121,
         "description": "Function 'forward' is too long (88 lines)"
@@ -452,66 +519,6 @@
       },
       {
         "type": "long_function",
-        "file": "./smell_diffusion/research/contrastive_multimodal.py",
-        "line": 302,
-        "description": "Function 'process_molecular_data' is too long (89 lines)"
-      },
-      {
-        "type": "print_statement",
-        "file": "./smell_diffusion/research/contrastive_multimodal.py",
-        "line": 517,
-        "description": "Use logging instead of print statements"
-      },
-      {
-        "type": "long_function",
-        "file": "./smell_diffusion/research/sustainable_molecular_design.py",
-        "line": 214,
-        "description": "Function 'evaluate_molecule' is too long (63 lines)"
-      },
-      {
-        "type": "long_function",
-        "file": "./smell_diffusion/research/sustainable_molecular_design.py",
-        "line": 491,
-        "description": "Function 'generate_sustainable_molecules' is too long (96 lines)"
-      },
-      {
-        "type": "print_statement",
-        "file": "./smell_diffusion/research/sustainable_molecular_design.py",
-        "line": 729,
-        "description": "Use logging instead of print statements"
-      },
-      {
-        "type": "print_statement",
-        "file": "./smell_diffusion/research/sustainable_molecular_design.py",
-        "line": 730,
-        "description": "Use logging instead of print statements"
-      },
-      {
-        "type": "print_statement",
-        "file": "./smell_diffusion/research/sustainable_molecular_design.py",
-        "line": 731,
-        "description": "Use logging instead of print statements"
-      },
-      {
-        "type": "print_statement",
-        "file": "./smell_diffusion/research/sustainable_molecular_design.py",
-        "line": 732,
-        "description": "Use logging instead of print statements"
-      },
-      {
-        "type": "print_statement",
-        "file": "./smell_diffusion/research/sustainable_molecular_design.py",
-        "line": 734,
-        "description": "Use logging instead of print statements"
-      },
-      {
-        "type": "print_statement",
-        "file": "./smell_diffusion/research/sustainable_molecular_design.py",
-        "line": 736,
-        "description": "Use logging instead of print statements"
-      },
-      {
-        "type": "long_function",
         "file": "./smell_diffusion/safety/evaluator.py",
         "line": 64,
         "description": "Function 'comprehensive_evaluation' is too long (140 lines)"
@@ -579,7 +586,7 @@
       {
         "type": "long_function",
         "file": "./smell_diffusion/utils/config.py",
-        "line": 190,
+        "line": 198,
         "description": "Function '_load_env_variables' is too long (53 lines)"
       },
       {
@@ -674,5 +681,5 @@
       }
     ]
   },
-  "overall_score": 83.33333333333334
+  "overall_score": 66.66666666666666
 }

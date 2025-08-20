@@ -1,0 +1,47 @@
+{
+  "safety": {
+    "report": {
+      "title": "Отчет об оценке безопасности",
+      "overall_score": "Общий балл безопасности: {score}/100",
+      "ifra_compliant": "Соответствует IFRA",
+      "ifra_non_compliant": "Не соответствует IFRA",
+      "recommendations": "Рекомендации по безопасности"
+    },
+    "warnings": {
+      "high_molecular_weight": "Высокий молекулярный вес может снизить летучесть",
+      "skin_sensitizer": "Потенциальный сенсибилизатор кожи - используйте с осторожностью",
+      "eye_irritant": "Может вызвать раздражение глаз",
+      "respiratory_irritant": "Может вызвать раздражение дыхательных путей",
+      "environmental_concern": "Воздействие на окружающую среду требует оценки"
+    }
+  },
+  "fragrance_notes": {
+    "bergamot": "Бергамот",
+    "lemon": "Лимон",
+    "rose": "Роза",
+    "jasmine": "Жасмин",
+    "vanilla": "Ваниль",
+    "sandalwood": "Сандаловое дерево",
+    "patchouli": "Пачули",
+    "amber": "Амбра",
+    "cedar": "Кедр",
+    "musk": "Мускус",
+    "lavender": "Лаванда",
+    "citrus": "Цитрус",
+    "floral": "Цветочный",
+    "woody": "Древесный",
+    "oriental": "Восточный",
+    "fresh": "Свежий",
+    "aquatic": "Водный",
+    "spicy": "Пряный",
+    "fruity": "Фруктовый",
+    "green": "Зеленый"
+  },
+  "cli": {
+    "generate": {
+      "success": "Успешно создано {count} молекул",
+      "error": "Ошибка при создании молекул: {error}",
+      "no_molecules": "Молекулы не созданы"
+    }
+  }
+}
