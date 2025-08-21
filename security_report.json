@@ -1,15 +1,8 @@
 {
   "security": {
-    "passed": 3,
-    "failed": 1,
-    "issues": [
-      {
-        "type": "potential_secret",
-        "file": "./.venv/lib/python3.12/site-packages/fontTools/ttLib/tables/ttProgram.py",
-        "line": 201,
-        "description": "Potential hardcoded secret detected"
-      }
-    ]
+    "passed": 4,
+    "failed": 0,
+    "issues": []
   },
   "quality": {
     "passed": 0,
@@ -681,5 +674,5 @@
       }
     ]
   },
-  "overall_score": 66.66666666666666
+  "overall_score": 83.33333333333334
 }

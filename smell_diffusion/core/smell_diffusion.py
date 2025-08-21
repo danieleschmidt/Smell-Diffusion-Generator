@@ -16,11 +16,14 @@ try:
 except ImportError:
     # Fallback for environments without NumPy
     class MockNumPy:
-        def random(self):
-            return random
+        def __init__(self):
+            self.random = MockRandom()
+        
         @staticmethod
         def array(x):
             return x
+    
+    class MockRandom:
         @staticmethod
         def choice(items, p=None):
             if p is None:
@@ -34,6 +37,7 @@ except ImportError:
                 if r <= cumulative:
                     return items[i]
             return items[-1]
+    
     np = MockNumPy()
 
 from .molecule import Molecule
