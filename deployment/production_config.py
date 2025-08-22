@@ -152,7 +152,7 @@ class ProductionConfigManager:
                 port=5432,
                 database="smell_diffusion_dev",
                 username="dev_user",
-                password="dev_password",
+                password=os.getenv("DB_PASSWORD", ""),
                 ssl_enabled=False,
                 connection_pool_size=5
             ),
@@ -163,7 +163,7 @@ class ProductionConfigManager:
                 max_connections=20
             ),
             security=SecurityConfig(
-                jwt_secret_key="dev_secret_key_change_in_production",
+                jwt_secret_key=os.getenv("JWT_SECRET_KEY", ""),
                 api_rate_limit=10000,
                 cors_origins=["http://localhost:3000", "http://localhost:8080"],
                 security_headers_enabled=False,

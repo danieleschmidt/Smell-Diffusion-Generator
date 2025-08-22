@@ -41,45 +41,8 @@ def generate(
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Verbose output")
 ):
     """Generate fragrance molecules from text description."""
-    
     try:
-        # Load configuration
-        config = get_config()
-        
-        console.print(f"🌸 Generating {num_molecules} fragrance molecules...")
-        console.print(f"Prompt: [bold cyan]'{prompt}'[/bold cyan]")
-        
-        # Initialize model
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console
-        ) as progress:
-            task = progress.add_task("Loading model...", total=None)
-            model_instance = SmellDiffusion.from_pretrained(model)
-            progress.update(task, description="Generating molecules...")
-            
-            # Generate molecules
-            molecules = model_instance.generate(
-                prompt=prompt,
-                num_molecules=num_molecules,
-                guidance_scale=guidance_scale,
-                safety_filter=safety_filter
-            )
-            
-            progress.update(task, description="Complete!")
-        
-        if not isinstance(molecules, list):
-            molecules = [molecules] if molecules else []
-        
-        # Display results
-        _display_molecules(molecules, verbose)
-        
-        # Save results if requested
-        if output:
-            _save_results(molecules, output, prompt)
-            console.print(f"✅ Results saved to [bold green]{output}[/bold green]")
-        
+        _execute_generation(prompt, num_molecules, model, output, safety_filter, guidance_scale, verbose)
     except ValidationError as e:
         console.print(f"❌ Validation Error: [bold red]{e}[/bold red]")
         raise typer.Exit(1)
@@ -88,6 +51,47 @@ def generate(
         if verbose:
             console.print_exception()
         raise typer.Exit(1)
+
+
+def _execute_generation(prompt: str, num_molecules: int, model: str, output: Optional[Path], 
+                       safety_filter: bool, guidance_scale: float, verbose: bool):
+    """Execute the molecular generation process."""
+    # Load configuration
+    config = get_config()
+    
+    console.print(f"🌸 Generating {num_molecules} fragrance molecules...")
+    console.print(f"Prompt: [bold cyan]'{prompt}'[/bold cyan]")
+    
+    # Initialize model
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console
+    ) as progress:
+        task = progress.add_task("Loading model...", total=None)
+        model_instance = SmellDiffusion.from_pretrained(model)
+        progress.update(task, description="Generating molecules...")
+        
+        # Generate molecules
+        molecules = model_instance.generate(
+            prompt=prompt,
+            num_molecules=num_molecules,
+            guidance_scale=guidance_scale,
+            safety_filter=safety_filter
+        )
+        
+        progress.update(task, description="Complete!")
+    
+    if not isinstance(molecules, list):
+        molecules = [molecules] if molecules else []
+    
+    # Display results
+    _display_molecules(molecules, verbose)
+    
+    # Save results if requested
+    if output:
+        _save_results(molecules, output, prompt)
+        console.print(f"✅ Results saved to [bold green]{output}[/bold green]")
 
 
 @app.command()
