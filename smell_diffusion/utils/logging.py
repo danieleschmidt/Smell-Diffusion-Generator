@@ -117,6 +117,11 @@ class SmellDiffusionLogger:
         self.logger.info(f"Performance metrics: {json.dumps(metrics)}")
 
 
+def get_logger(name: str = "smell_diffusion", log_level: str = "INFO") -> SmellDiffusionLogger:
+    """Get or create a logger instance."""
+    return SmellDiffusionLogger(name, log_level)
+
+
 def performance_monitor(operation_name: str = None):
     """Decorator to monitor function performance."""
     def decorator(func: Callable) -> Callable:

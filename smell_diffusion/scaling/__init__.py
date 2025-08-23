@@ -18,7 +18,10 @@ from .distributed_generation import (
     create_distributed_generator
 )
 
-from .concurrent_processor import ConcurrentProcessor
+from .concurrent_processor import (
+    ConcurrentMoleculeProcessor as ConcurrentProcessor,
+    create_concurrent_processor
+)
 
 from .advanced_scaling import (
     AdvancedScalingOrchestrator,
@@ -42,6 +45,7 @@ __all__ = [
     "ResourceOptimizer",
     "create_distributed_generator",
     "ConcurrentProcessor",
+    "create_concurrent_processor",
     "AdvancedScalingOrchestrator",
     "AdvancedAutoScaler",
     "AdvancedLoadBalancer",
