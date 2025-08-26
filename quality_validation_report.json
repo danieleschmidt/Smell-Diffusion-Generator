@@ -1,0 +1,221 @@
+{
+  "timestamp": 1756182587.9262083,
+  "execution_time": 0.10162496566772461,
+  "overall_result": "warning",
+  "overall_score": 0.9497309173496593,
+  "gate_results": {
+    "autonomous_sdlc_gate": {
+      "gate_name": "autonomous_sdlc_gate",
+      "gate_type": "functional",
+      "result": "pass",
+      "score": 0.9370065789473684,
+      "message": "All quality criteria met (Score: 0.937)",
+      "details": {
+        "metrics_evaluated": 4,
+        "failing_metrics": [],
+        "warning_metrics": [],
+        "threshold_critical": 0.85,
+        "threshold_warning": 0.7
+      },
+      "recommendations": [],
+      "execution_time": 4.315376281738281e-05
+    },
+    "security_gate": {
+      "gate_name": "security_gate",
+      "gate_type": "functional",
+      "result": "pass",
+      "score": 1.0,
+      "message": "All quality criteria met (Score: 1.000)",
+      "details": {
+        "metrics_evaluated": 2,
+        "failing_metrics": [],
+        "warning_metrics": [],
+        "threshold_critical": 0.9,
+        "threshold_warning": 0.8
+      },
+      "recommendations": [],
+      "execution_time": 1.049041748046875e-05
+    },
+    "performance_gate": {
+      "gate_name": "performance_gate",
+      "gate_type": "functional",
+      "result": "pass",
+      "score": 0.9369918699186991,
+      "message": "All quality criteria met (Score: 0.937)",
+      "details": {
+        "metrics_evaluated": 3,
+        "failing_metrics": [],
+        "warning_metrics": [],
+        "threshold_critical": 0.8,
+        "threshold_warning": 0.7
+      },
+      "recommendations": [],
+      "execution_time": 1.1682510375976562e-05
+    },
+    "reliability_gate": {
+      "gate_name": "reliability_gate",
+      "gate_type": "functional",
+      "result": "warning",
+      "score": 0.89375,
+      "message": "Quality concerns detected (Score: 0.894)",
+      "details": {
+        "metrics_evaluated": 2,
+        "failing_metrics": [],
+        "warning_metrics": [],
+        "threshold_critical": 0.95,
+        "threshold_warning": 0.9
+      },
+      "recommendations": [],
+      "execution_time": 1.239776611328125e-05
+    },
+    "scalability_gate": {
+      "gate_name": "scalability_gate",
+      "gate_type": "functional",
+      "result": "pass",
+      "score": 1.0,
+      "message": "All quality criteria met (Score: 1.000)",
+      "details": {
+        "metrics_evaluated": 2,
+        "failing_metrics": [],
+        "warning_metrics": [],
+        "threshold_critical": 0.8,
+        "threshold_warning": 0.7
+      },
+      "recommendations": [],
+      "execution_time": 8.106231689453125e-06
+    }
+  },
+  "critical_failures": 0,
+  "warnings": 1,
+  "quality_metrics": {
+    "test_coverage": {
+      "name": "Test Coverage",
+      "gate_type": "functional",
+      "threshold": 0.85,
+      "current_value": 0.88,
+      "target_value": 0.95,
+      "weight": 1.5,
+      "critical": true,
+      "score": 1.0
+    },
+    "test_pass_rate": {
+      "name": "Test Pass Rate",
+      "gate_type": "functional",
+      "threshold": 0.95,
+      "current_value": 0.92,
+      "target_value": 1.0,
+      "weight": 2.0,
+      "critical": true,
+      "score": 0.9684210526315791
+    },
+    "code_quality": {
+      "name": "Code Quality Score",
+      "gate_type": "maintainability",
+      "threshold": 0.8,
+      "current_value": 0.85,
+      "target_value": 0.9,
+      "weight": 1.2,
+      "critical": false,
+      "score": 1.0
+    },
+    "response_time": {
+      "name": "Average Response Time",
+      "gate_type": "performance",
+      "threshold": 200.0,
+      "current_value": 150.0,
+      "target_value": 100.0,
+      "weight": 1.3,
+      "critical": false,
+      "score": 1.0
+    },
+    "throughput": {
+      "name": "System Throughput",
+      "gate_type": "performance",
+      "threshold": 1000.0,
+      "current_value": 1200.0,
+      "target_value": 2000.0,
+      "weight": 1.2,
+      "critical": false,
+      "score": 0.8333333333333334
+    },
+    "memory_efficiency": {
+      "name": "Memory Efficiency",
+      "gate_type": "performance",
+      "threshold": 0.8,
+      "current_value": 0.82,
+      "target_value": 0.9,
+      "weight": 1.1,
+      "critical": false,
+      "score": 0.9756097560975611
+    },
+    "security_score": {
+      "name": "Security Score",
+      "gate_type": "security",
+      "threshold": 0.8,
+      "current_value": 0.87,
+      "target_value": 0.95,
+      "weight": 1.8,
+      "critical": true,
+      "score": 1.0
+    },
+    "vulnerability_count": {
+      "name": "Vulnerability Count",
+      "gate_type": "security",
+      "threshold": 0.0,
+      "current_value": 0.0,
+      "target_value": 0.0,
+      "weight": 2.0,
+      "critical": true,
+      "score": 1.0
+    },
+    "error_rate": {
+      "name": "Error Rate",
+      "gate_type": "reliability",
+      "threshold": 0.01,
+      "current_value": 0.008,
+      "target_value": 0.001,
+      "weight": 1.7,
+      "critical": true,
+      "score": 0.8
+    },
+    "uptime": {
+      "name": "System Uptime",
+      "gate_type": "reliability",
+      "threshold": 0.999,
+      "current_value": 0.9995,
+      "target_value": 0.9999,
+      "weight": 1.5,
+      "critical": true,
+      "score": 1.0
+    },
+    "scalability_factor": {
+      "name": "Scalability Factor",
+      "gate_type": "scalability",
+      "threshold": 5.0,
+      "current_value": 7.5,
+      "target_value": 10.0,
+      "weight": 1.0,
+      "critical": false,
+      "score": 1.0
+    },
+    "resource_utilization": {
+      "name": "Resource Utilization",
+      "gate_type": "scalability",
+      "threshold": 0.8,
+      "current_value": 0.85,
+      "target_value": 0.9,
+      "weight": 1.1,
+      "critical": false,
+      "score": 1.0
+    }
+  },
+  "recommendations": [
+    "EXCELLENT: System quality exceeds targets - maintain current practices",
+    "IMPROVEMENT: Address warnings in reliability_gate"
+  ],
+  "healing_actions": [
+    "Configure automatic failover",
+    "Implement additional error handling",
+    "Add health check monitors"
+  ]
+}
