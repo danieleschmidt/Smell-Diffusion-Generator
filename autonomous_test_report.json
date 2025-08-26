@@ -1,0 +1,104 @@
+{
+  "summary": {
+    "total_tests": 10,
+    "passed": 9,
+    "failed": 1,
+    "pass_rate": 0.9,
+    "total_execution_time": 4.8468780517578125
+  },
+  "quality_metrics": {
+    "average_quality_score": 0.8811111111111111,
+    "average_execution_time": 0.48457679748535154,
+    "quality_threshold": 0.85,
+    "quality_gates_passed": true
+  },
+  "test_results": [
+    {
+      "test_name": "SDLC Executor Initialization",
+      "passed": true,
+      "execution_time": 0.10195064544677734,
+      "quality_score": 0.95,
+      "performance_score": 1.0,
+      "error_message": null
+    },
+    {
+      "test_name": "Generation Configuration Validation",
+      "passed": true,
+      "execution_time": 1.2874603271484375e-05,
+      "quality_score": 0.92,
+      "performance_score": 1.0,
+      "error_message": null
+    },
+    {
+      "test_name": "Basic SDLC Execution Pipeline",
+      "passed": true,
+      "execution_time": 1.6416056156158447,
+      "quality_score": 0.88,
+      "performance_score": 1.0,
+      "error_message": null
+    },
+    {
+      "test_name": "Research Mode Activation",
+      "passed": true,
+      "execution_time": 7.224082946777344e-05,
+      "quality_score": 0.9,
+      "performance_score": 1.0,
+      "error_message": null
+    },
+    {
+      "test_name": "Quality Gate Validation",
+      "passed": true,
+      "execution_time": 0.00011491775512695312,
+      "quality_score": 0.87,
+      "performance_score": 1.0,
+      "error_message": null
+    },
+    {
+      "test_name": "Initialization Performance",
+      "passed": true,
+      "execution_time": 4.4345855712890625e-05,
+      "quality_score": 0.85,
+      "performance_score": 1.0,
+      "error_message": null
+    },
+    {
+      "test_name": "Memory Usage Test",
+      "passed": true,
+      "execution_time": 0.0001239776611328125,
+      "quality_score": 0.82,
+      "performance_score": 1.0,
+      "error_message": null
+    },
+    {
+      "test_name": "Error Handling Test",
+      "passed": false,
+      "execution_time": 1.3371918201446533,
+      "quality_score": 0.0,
+      "performance_score": 0.0,
+      "error_message": ""
+    },
+    {
+      "test_name": "Security Input Validation",
+      "passed": true,
+      "execution_time": 1.663719892501831,
+      "quality_score": 0.86,
+      "performance_score": 1.0,
+      "error_message": null
+    },
+    {
+      "test_name": "System Integration Test",
+      "passed": true,
+      "execution_time": 0.10093164443969727,
+      "quality_score": 0.88,
+      "performance_score": 1.0,
+      "error_message": null
+    }
+  ],
+  "failed_tests": [
+    {
+      "test_name": "Error Handling Test",
+      "error_message": "",
+      "execution_time": 1.3371918201446533
+    }
+  ]
+}
