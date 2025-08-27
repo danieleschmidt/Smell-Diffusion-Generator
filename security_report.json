@@ -1,615 +1,8 @@
 {
   "security": {
-    "passed": 3,
-    "failed": 101,
-    "issues": [
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/torch/hub.py",
-        "line": 87,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/pydantic/types.py",
-        "line": 1846,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/fontTools/ttLib/tables/ttProgram.py",
-        "line": 201,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/dns/tsig.py",
-        "line": 350,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/huggingface_hub/_webhooks_server.py",
-        "line": 87,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/huggingface_hub/constants.py",
-        "line": 286,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/huggingface_hub/inference/_client.py",
-        "line": 709,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/huggingface_hub/inference/_client.py",
-        "line": 2514,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/huggingface_hub/inference/_client.py",
-        "line": 2626,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/huggingface_hub/inference/_client.py",
-        "line": 2781,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/huggingface_hub/inference/_generated/_async_client.py",
-        "line": 746,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/huggingface_hub/inference/_generated/_async_client.py",
-        "line": 2572,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/huggingface_hub/inference/_generated/_async_client.py",
-        "line": 2684,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/huggingface_hub/inference/_generated/_async_client.py",
-        "line": 2840,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/huggingface_hub/utils/_validators.py",
-        "line": 96,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/testing_utils.py",
-        "line": 212,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/aya_vision/processing_aya_vision.py",
-        "line": 92,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/aya_vision/processing_aya_vision.py",
-        "line": 93,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/aya_vision/processing_aya_vision.py",
-        "line": 94,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/aya_vision/processing_aya_vision.py",
-        "line": 95,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/aya_vision/processing_aya_vision.py",
-        "line": 97,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/blenderbot_small/tokenization_blenderbot_small_fast.py",
-        "line": 51,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/blenderbot_small/tokenization_blenderbot_small_fast.py",
-        "line": 52,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/blenderbot_small/tokenization_blenderbot_small_fast.py",
-        "line": 53,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/clip/tokenization_clip.py",
-        "line": 288,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/clip/tokenization_clip.py",
-        "line": 289,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/clip/tokenization_clip.py",
-        "line": 290,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/clip/tokenization_clip.py",
-        "line": 291,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/clip/tokenization_clip_fast.py",
-        "line": 66,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/clip/tokenization_clip_fast.py",
-        "line": 67,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/clip/tokenization_clip_fast.py",
-        "line": 68,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/clip/tokenization_clip_fast.py",
-        "line": 69,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/clvp/tokenization_clvp.py",
-        "line": 146,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/codegen/tokenization_codegen.py",
-        "line": 148,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/codegen/tokenization_codegen.py",
-        "line": 149,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/codegen/tokenization_codegen.py",
-        "line": 150,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/codegen/tokenization_codegen_fast.py",
-        "line": 104,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/codegen/tokenization_codegen_fast.py",
-        "line": 105,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/codegen/tokenization_codegen_fast.py",
-        "line": 106,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/cohere/tokenization_cohere_fast.py",
-        "line": 120,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/cohere/tokenization_cohere_fast.py",
-        "line": 121,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/colqwen2/modular_colqwen2.py",
-        "line": 83,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/colqwen2/modular_colqwen2.py",
-        "line": 84,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/colqwen2/processing_colqwen2.py",
-        "line": 82,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/colqwen2/processing_colqwen2.py",
-        "line": 83,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/csm/processing_csm.py",
-        "line": 116,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/deprecated/gptsan_japanese/tokenization_gptsan_japanese.py",
-        "line": 148,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/deprecated/gptsan_japanese/tokenization_gptsan_japanese.py",
-        "line": 149,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/deprecated/gptsan_japanese/tokenization_gptsan_japanese.py",
-        "line": 150,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/deprecated/gptsan_japanese/tokenization_gptsan_japanese.py",
-        "line": 151,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/deprecated/gptsan_japanese/tokenization_gptsan_japanese.py",
-        "line": 152,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/deprecated/jukebox/tokenization_jukebox.py",
-        "line": 108,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/evolla/processing_evolla.py",
-        "line": 67,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/flaubert/tokenization_flaubert.py",
-        "line": 188,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/got_ocr2/processing_got_ocr2.py",
-        "line": 104,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/got_ocr2/processing_got_ocr2.py",
-        "line": 105,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/gpt2/tokenization_gpt2.py",
-        "line": 138,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/gpt2/tokenization_gpt2.py",
-        "line": 139,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/gpt2/tokenization_gpt2.py",
-        "line": 140,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/gpt2/tokenization_gpt2_fast.py",
-        "line": 90,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/gpt2/tokenization_gpt2_fast.py",
-        "line": 91,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/gpt2/tokenization_gpt2_fast.py",
-        "line": 92,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/gpt_neox/tokenization_gpt_neox_fast.py",
-        "line": 97,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/gpt_neox/tokenization_gpt_neox_fast.py",
-        "line": 98,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/gpt_neox/tokenization_gpt_neox_fast.py",
-        "line": 99,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/gpt_neox_japanese/tokenization_gpt_neox_japanese.py",
-        "line": 110,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/gpt_neox_japanese/tokenization_gpt_neox_japanese.py",
-        "line": 111,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/gpt_neox_japanese/tokenization_gpt_neox_japanese.py",
-        "line": 112,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/gpt_neox_japanese/tokenization_gpt_neox_japanese.py",
-        "line": 113,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/gpt_sw3/tokenization_gpt_sw3.py",
-        "line": 114,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/idefics/processing_idefics.py",
-        "line": 381,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/idefics/processing_idefics.py",
-        "line": 383,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/kosmos2/processing_kosmos2.py",
-        "line": 107,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/kosmos2/processing_kosmos2.py",
-        "line": 109,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/llama4/processing_llama4.py",
-        "line": 89,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/llama4/processing_llama4.py",
-        "line": 90,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/llama4/processing_llama4.py",
-        "line": 92,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/llama4/processing_llama4.py",
-        "line": 93,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/mllama/processing_mllama.py",
-        "line": 219,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/pixtral/processing_pixtral.py",
-        "line": 103,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/qwen2/tokenization_qwen2.py",
-        "line": 142,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/qwen2/tokenization_qwen2.py",
-        "line": 144,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/qwen2/tokenization_qwen2.py",
-        "line": 145,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/qwen2/tokenization_qwen2_fast.py",
-        "line": 88,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/qwen2/tokenization_qwen2_fast.py",
-        "line": 90,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/qwen2/tokenization_qwen2_fast.py",
-        "line": 91,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/qwen2_5_vl/processing_qwen2_5_vl.py",
-        "line": 84,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/qwen2_5_vl/processing_qwen2_5_vl.py",
-        "line": 85,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/qwen2_audio/processing_qwen2_audio.py",
-        "line": 70,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/qwen2_audio/processing_qwen2_audio.py",
-        "line": 71,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/qwen2_vl/processing_qwen2_vl.py",
-        "line": 79,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/qwen2_vl/processing_qwen2_vl.py",
-        "line": 80,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/splinter/tokenization_splinter.py",
-        "line": 109,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/splinter/tokenization_splinter_fast.py",
-        "line": 87,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/whisper/tokenization_whisper.py",
-        "line": 260,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/whisper/tokenization_whisper.py",
-        "line": 261,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/whisper/tokenization_whisper.py",
-        "line": 262,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/whisper/tokenization_whisper_fast.py",
-        "line": 93,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/whisper/tokenization_whisper_fast.py",
-        "line": 94,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/whisper/tokenization_whisper_fast.py",
-        "line": 95,
-        "description": "Potential hardcoded secret detected"
-      },
-      {
-        "type": "potential_secret",
-        "file": "./venv/lib/python3.12/site-packages/transformers/models/xlm/tokenization_xlm.py",
-        "line": 203,
-        "description": "Potential hardcoded secret detected"
-      }
-    ]
+    "passed": 4,
+    "failed": 0,
+    "issues": []
   },
   "quality": {
     "passed": 0,
@@ -1137,6 +530,54 @@
       },
       {
         "type": "long_function",
+        "file": "./smell_diffusion/research/revolutionary_meta_learning.py",
+        "line": 113,
+        "description": "Function '__init__' is too long (144 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/revolutionary_meta_learning.py",
+        "line": 312,
+        "description": "Function '_calculate_curiosity_value' is too long (134 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/revolutionary_meta_learning.py",
+        "line": 457,
+        "description": "Function '_process_experimental_results' is too long (59 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/revolutionary_meta_learning.py",
+        "line": 616,
+        "description": "Function '_assess_breakthrough_potential' is too long (57 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/revolutionary_meta_learning.py",
+        "line": 687,
+        "description": "Function '_prepare_publication_findings' is too long (55 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/revolutionary_meta_learning.py",
+        "line": 1487,
+        "description": "Function '_extract_knowledge_from_insight' is too long (58 lines)"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/revolutionary_meta_learning.py",
+        "line": 1629,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "print_statement",
+        "file": "./smell_diffusion/research/revolutionary_meta_learning.py",
+        "line": 1642,
+        "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "long_function",
         "file": "./smell_diffusion/research/sustainable_molecular_design.py",
         "line": 214,
         "description": "Function 'evaluate_molecule' is too long (63 lines)"
@@ -1260,6 +701,54 @@
         "file": "./smell_diffusion/research/uncertainty_quantification.py",
         "line": 685,
         "description": "Use logging instead of print statements"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/universal_molecular_transformer.py",
+        "line": 668,
+        "description": "Function '_get_task_output_dim' is too long (89 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/universal_molecular_transformer.py",
+        "line": 1007,
+        "description": "Function '_compute_cross_modal_alignments' is too long (123 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/universal_molecular_transformer.py",
+        "line": 1171,
+        "description": "Function '_check_layer_convergence' is too long (82 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/universal_molecular_transformer.py",
+        "line": 1253,
+        "description": "Function '_is_valid_smiles' is too long (56 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/universal_molecular_transformer.py",
+        "line": 1399,
+        "description": "Function '_summarize_output' is too long (92 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/universal_molecular_transformer.py",
+        "line": 1688,
+        "description": "Function '__init__' is too long (183 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/universal_molecular_transformer.py",
+        "line": 1921,
+        "description": "Function '__init__' is too long (73 lines)"
+      },
+      {
+        "type": "long_function",
+        "file": "./smell_diffusion/research/universal_molecular_transformer.py",
+        "line": 2047,
+        "description": "Function 'memory_score' is too long (100 lines)"
       },
       {
         "type": "long_function",
@@ -1479,5 +968,5 @@
       }
     ]
   },
-  "overall_score": 3.7735849056603774
+  "overall_score": 83.33333333333334
 }
