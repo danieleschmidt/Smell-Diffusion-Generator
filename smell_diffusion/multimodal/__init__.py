@@ -1,1 +1,0 @@
-"""Multi-modal generation modules."""

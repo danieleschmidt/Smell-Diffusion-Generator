@@ -1,1 +1,0 @@
-"""Test suite for Smell Diffusion Generator."""
